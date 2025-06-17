@@ -1,0 +1,122 @@
+/* ───────── Legend Bar ───────── */
+.type-legend {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 12px 0 4px;
+
+  .legend-item {
+    font-size: 11px;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+
+      &.training {
+        background: #c9a84e;
+      } /* gold  */
+      &.challenge {
+        background: #e53935;
+      } /* red   */
+      &.league {
+        background: #42a5f5;
+      } /* blue  */
+    }
+  }
+}
+
+/* ───────── History Rows ───────── */
+.compact-history-row {
+  border-bottom: 1px solid #2a2a2a;
+  padding: 0 16px;
+
+  .row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    cursor: pointer;
+
+    .type-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.training {
+        background: #c9a84e;
+      }
+      &.challenge {
+        background: #e53935;
+      }
+      &.league {
+        background: #42a5f5;
+      }
+    }
+
+    .session-info {
+      flex: 1;
+      overflow: hidden; /* prevents long text wrap */
+
+      .main-line {
+        font-size: 13px;
+        color: #fff;
+        font-weight: 600;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+
+      .sub-line {
+        font-size: 11px;
+        color: #aaa;
+      }
+    }
+
+    .arrow {
+      color: #c9a84e;
+      font-size: 18px;
+      transition: transform 0.2s;
+
+      &.expanded {
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  /* ───── Expanded area ───── */
+  .row-details {
+    background: #0f0f0f;
+    padding: 16px 0 20px;
+
+    .target-container {
+      position: relative;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+
+      .target-img {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+      }
+
+      .hit-marker {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #e53935;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 4px #e53935;
+      }
+    }
+  }
+}

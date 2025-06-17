@@ -1,0 +1,32 @@
+
+.fab {
+  position: fixed;
+  bottom: 24px; // ⬆ lift it up so it doesn't cover content
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #c9a84e;
+  color: #000;
+  font-size: 2rem;
+  font-weight: bold;
+  border: none;
+  z-index: 1100;
+
+  box-shadow: 0 6px 15px rgba(201, 168, 78, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 4px 10px rgba(201, 168, 78, 0.25);
+  }
+
+  // Optional: add subtle attention pulse
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 rgba(201, 168, 78, 0.4); }
+  50%  { box-shadow: 0 0 15px rgba(201, 168, 78, 0.4); }
+  100% { box-shadow: 0 0 0 rgba(201, 168, 78, 0.4); }
+}

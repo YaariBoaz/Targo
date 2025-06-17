@@ -1,0 +1,40 @@
+.screen-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: linear-gradient(to bottom, #111419, #0d0f12);
+  z-index: 10;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+  // 🛡️ Make room for back button
+  padding-top: calc(env(safe-area-inset-top, 16px) + 48px);
+
+  &.android-transition {
+    &.entering {
+      transform: translateX(100%);
+    }
+    &.entered {
+      transform: translateX(0);
+    }
+    &.exiting {
+      transform: translateX(100%);
+    }
+  }
+
+  &.ios-transition {
+    &.entering {
+      transform: translateX(30px);
+      opacity: 0.3;
+    }
+    &.entered {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    &.exiting {
+      transform: translateX(80px);
+      opacity: 0;
+    }
+  }
+}

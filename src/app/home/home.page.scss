@@ -25,3 +25,28 @@
 #container a {
   text-decoration: none;
 }
+
+::ng-deep .toolbar-container {
+  --background: red;
+}
+
+ion-toolbar::part(toolbar-background) {
+  background: #222;
+}
+
+.back-button {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 9999;
+
+  background: #0b111d;
+  color: #c9a84e;
+  border: 1px solid #c9a84e;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+
+  pointer-events: auto;
+}

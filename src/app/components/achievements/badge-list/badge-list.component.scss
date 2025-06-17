@@ -1,0 +1,74 @@
+section {
+  padding: 20px 0px;
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    button {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+
+      &.active {
+        color: #c9a84e;
+        border-color: #c9a84e;
+      }
+    }
+  }
+
+  .badge-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 0 16px;
+    overflow-y: auto;
+    height: 90vh;
+    .badge-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 0px;
+      img {
+        width: 80px;
+        height: 80px;
+        filter: grayscale(100%) brightness(0.7);
+        transition: filter 0.3s;
+      }
+
+      .label {
+        margin-top: 8px;
+        color: #aaa;
+        font-weight: bold;
+      }
+
+      &.earned {
+        img {
+          filter: none;
+        }
+
+        .label {
+          color: #c9a84e;
+        }
+      }
+      .badge-icon {
+        width: 80px;
+        height: 80px;
+        color: #777; // default gray
+        height: 45px;
+      }
+
+      .badge-card.earned .badge-icon {
+        color: #c9a84e; // gold
+      }
+    }
+  }
+}

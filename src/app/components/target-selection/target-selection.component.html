@@ -1,0 +1,11 @@
+<div class="target-selection">
+  <div class="section-title">Available Targets</div>
+
+  <div class="target-list">
+    <app-target-card
+      *ngFor="let target of targets"
+      [target]="target"
+      (connect)="onConnect()"
+    ></app-target-card>
+  </div>
+</div>

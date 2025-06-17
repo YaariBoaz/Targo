@@ -1,0 +1,43 @@
+<!-- ───── Legend bar ───── -->
+<div class="type-legend">
+  <div class="legend-item"><span class="dot training"></span> Training</div>
+  <div class="legend-item"><span class="dot challenge"></span> Challenge</div>
+  <div class="legend-item"><span class="dot league"></span> League</div>
+</div>
+
+<!-- ───── History list ───── -->
+<div class="compact-history-row" *ngFor="let session of history">
+  <!-- Row summary (tap to expand) -->
+  <div class="row-header" (click)="toggleRow(session.id)">
+    <span class="type-dot" [ngClass]="session.type"></span>
+
+    <div class="session-info">
+      <div class="main-line">
+        {{ session.date }} • {{ session.distance }} • {{ session.weapon }}
+      </div>
+      <div class="sub-line">
+        Bullets&nbsp;{{ session.bullets }} | Hits&nbsp;{{ session.hits }}
+      </div>
+    </div>
+
+    <span class="arrow" [class.expanded]="expandedSessionId === session.id"
+      >›</span
+    >
+  </div>
+
+  <!-- Row details (target image + hits) -->
+  <div class="row-details" *ngIf="expandedSessionId === session.id">
+    <div class="target-container">
+      <img
+        src="https://www.activesgcircle.gov.sg/hs-fs/hubfs/Circle%202.0%20-%202021/images/SS_Graphic02_Target_CMYK.jpeg?width=1041&name=SS_Graphic02_Target_CMYK.jpeg"
+        alt="Target"
+      />
+      <div
+        class="hit-marker"
+        *ngFor="let hit of session.hitLocations"
+        [style.left.%]="hit.x"
+        [style.top.%]="hit.y"
+      ></div>
+    </div>
+  </div>
+</div>

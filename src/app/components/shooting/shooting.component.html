@@ -1,0 +1,47 @@
+<div class="shooting-screen">
+  <!-- Bullet Counter -->
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="timer">{{ elapsedTime | date : "mm:ss" }}</div>
+    <div class="bullet-counter">
+      <img src="assets/bullet.png" alt="bullet" />
+      <span>{{ bulletsLeft }}</span>
+    </div>
+    <button class="stop-button" (click)="endDrill()">STOP</button>
+  </div>
+
+  <!-- Target Area -->
+  <div class="target-area" [class.finished]="!isDrillComplete">
+    <div class="drill-complete-overlay" *ngIf="isFinished">
+      <h2 class="complete-title">🎯 Drill Complete</h2>
+      <p class="summary">Nice shooting! You fired {{ totalShots }} rounds.</p>
+
+      <div class="actions">
+        <button (click)="retry()">🔁 Retry</button>
+        <button (click)="viewStats()">📊 View Stats</button>
+        <button (click)="exit()">🏁 Exit</button>
+      </div>
+    </div>
+    <div class="target-wrapper">
+      <img
+        src="https://www.activesgcircle.gov.sg/hs-fs/hubfs/Circle%202.0%20-%202021/images/SS_Graphic02_Target_CMYK.jpeg?width=1041&name=SS_Graphic02_Target_CMYK.jpeg"
+        alt="Target"
+      />
+
+      <!-- Shot Impacts -->
+      <div
+        class="impact-marker"
+        *ngFor="let hit of hitPoints; let i = index"
+        [style.top.%]="hit.y"
+        [class.last-shot]="i === hitPoints.length - 1"
+        [style.left.%]="hit.x"
+      ></div>
+    </div>
+  </div>
+  <button class="end-drill" *ngIf="isDrillComplete" (click)="isFinished = true">
+    Finish Drill
+  </button>
+  <!-- Floating View Stats Button -->
+  <button class="view-stats-button" (click)="viewStats()">View Stats</button>
+</div>

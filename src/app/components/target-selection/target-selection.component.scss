@@ -1,0 +1,23 @@
+.target-selection {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+
+  .section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #f0f0f0;
+    padding-left: 4px;
+    border-left: 4px solid #d4af37;
+  }
+
+  .target-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}

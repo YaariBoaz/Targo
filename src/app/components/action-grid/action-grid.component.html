@@ -1,0 +1,18 @@
+<div class="action-grid">
+  <div class="action-button" (click)="goTo(ScreenState.ChallegnesList)">
+    <button>CHALLNEGES</button>
+    <span class="new-badge" *ngIf="hasNewStoreContent">!</span>
+  </div>
+  <div class="action-button" (click)="goTo(ScreenState.TrainingSetup)">
+    <button>TRAINING</button>
+    <span class="new-badge" *ngIf="hasNewStoreContent">!</span>
+  </div>
+  <div class="action-button disabled">
+    <button disabled>LEAGUES</button>
+    <span class="coming-soon-label">Coming Soon</span>
+  </div>
+  <div class="action-button" (click)="goTo(ScreenState.UserSettings)">
+    <button>YOUR STATS</button>
+  </div>
+</div>
+`

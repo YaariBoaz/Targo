@@ -1,0 +1,74 @@
+.challenge-card {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to right, #1a1f26, #232a33);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 12px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.card-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.image-container {
+  flex: 0 0 25%;
+  max-width: 25%;
+  border-radius: 8px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+
+  .title {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .leader {
+    font-size: 13px;
+    color: #ccc;
+  }
+
+  .xp {
+    font-size: 13px;
+    color: #d4af37;
+    font-weight: 600;
+  }
+}
+
+.cta-button {
+  align-self: center;
+  width: 100%;
+  padding: 10px;
+ background-color: #d4af37;
+  color: #101010;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:active {
+  background-color: #bfa133; // deeper gold
+  }
+}

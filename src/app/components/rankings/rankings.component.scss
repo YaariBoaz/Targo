@@ -1,0 +1,60 @@
+.ranking-board {
+  margin: 2rem 1rem;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.04), #151d22);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 1rem;
+  padding: 1rem;
+
+  .title {
+    font-size: 1.1rem;
+    color: #f2f2f2;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .rank {
+        width: 2rem;
+        font-weight: bold;
+        color: #bbb;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        margin: 0 0.75rem;
+      }
+
+      .name {
+        flex: 1;
+        color: #f2f2f2;
+      }
+
+      .points {
+        font-weight: bold;
+        color: #c9a84e;
+      }
+
+      &.current-user {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-left: 4px solid #c9a84e;
+      }
+    }
+  }
+}

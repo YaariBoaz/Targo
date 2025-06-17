@@ -1,0 +1,195 @@
+.shooting-screen {
+  height: 100%;
+  background: radial-gradient(circle at center, #111419 0%, #0d0f12 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #ffffff47;
+
+  .timer {
+    font-family: "Roboto Mono", monospace;
+    font-size: 20px;
+    letter-spacing: 1px;
+    animation: pulse 2s infinite;
+  }
+
+  .stop-button {
+    background-color: #e53935;
+    border: none;
+    padding: 8px 16px;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 2px 10px rgba(229, 57, 53, 0.6);
+
+    &:active {
+      background-color: #c62828;
+    }
+  }
+}
+
+.target-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 100px;
+
+  .target-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    img {
+      width: 100vw;
+      object-fit: contain;
+      border-radius: 50%;
+      box-shadow: 0 0 60px rgba(255, 255, 255, 0.07),
+        0 0 8px rgba(255, 255, 255, 0.2);
+      padding: 0.5em;
+    }
+  }
+}
+
+.view-stats-button {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1c1f26;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 10px 24px;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+
+  &:active {
+    background-color: #222831;
+  }
+}
+.end-drill {
+  height: 50px;
+  width: 80vw;
+  background-color: #c9a84e;
+  color: black;
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 8px;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.8;
+  }
+}
+
+.bullet-counter {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffd700;
+  line-height: 1;
+  transform: translateY(1px);
+  padding: 0.5em;
+  background: #ffffff0f;
+  border-radius: 8px;
+  border: 1px solid;
+
+  img {
+    height: 18px;
+    width: auto;
+    display: block;
+    margin-top: -1px; // fine-tune vertical alignment
+  }
+}
+
+.impact-marker {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #ff0000 0%, #a00000 60%, #000000 100%);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 6px rgba(255, 0, 0, 0.5);
+  z-index: 5;
+
+  &.last-shot {
+    background: radial-gradient(circle, #ffd700 0%, #d4af37 60%, #a97c00 100%);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    border: 1px solid #fff;
+    z-index: 6;
+  }
+}
+
+.drill-complete-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 19, 24, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+  border-radius: 12px;
+
+  .complete-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #c9a84e;
+    margin-bottom: 12px;
+  }
+
+  .summary {
+    color: #ccc;
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+
+    button {
+      padding: 10px 16px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      background: #c9a84e;
+      color: #0f1318;
+      font-weight: bold;
+      cursor: pointer;
+
+      &:hover {
+        background: #b8933e;
+      }
+    }
+  }
+}

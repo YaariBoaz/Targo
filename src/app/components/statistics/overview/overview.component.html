@@ -1,0 +1,50 @@
+<h2>Performance Overview</h2>
+
+<div class="stats-grid">
+  <!-- Accuracy -->
+  <div class="stat-card">
+    <label>Accuracy</label>
+    <strong>{{ overviewData.accuracy }}%</strong>
+  </div>
+
+  <!-- Best Drill Score -->
+  <div class="stat-card">
+    <label>Best Drill Score</label>
+    <strong>{{ overviewData.bestDrillScore }}</strong>
+  </div>
+
+  <!-- Total Shots -->
+  <div class="stat-card">
+    <label>Current Rank</label>
+    <strong>Dominator</strong>
+  </div>
+
+  <!-- Total Shots -->
+  <div class="stat-card">
+    <label>Total Shots Fired</label>
+    <strong>{{ overviewData.totalShots | number }}</strong>
+  </div>
+
+  <!-- Weekly Activity -->
+  <div class="stat-card chart-card">
+    <label>Weekly Activity</label>
+    <ngx-charts-bar-vertical
+      [results]="chartData"
+      [scheme]="barColor"
+      [xAxis]="true"
+      [yAxis]="false"
+      [showXAxisLabel]="false"
+      [showYAxisLabel]="false"
+      [gradient]="false"
+      [roundEdges]="true"
+      [animations]="true"
+      [barPadding]="10"
+      [view]="[300, 140]"
+    ></ngx-charts-bar-vertical>
+  </div>
+</div>
+
+<p class="teaser">
+  Curious how your reaction time compares to the top 5%?<br />
+  <span class="pro-link">Tap Pro Insights to explore more →</span>
+</p>

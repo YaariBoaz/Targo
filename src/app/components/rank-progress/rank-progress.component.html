@@ -1,0 +1,73 @@
+<section class="rank-progress">
+  <h2>Challenges Progress</h2>
+  <div *ngFor="let challenge of challenges" class="progress-row">
+    <div class="badge">{{ challenge.level }}</div>
+    <div class="details">
+      <div class="title">{{ challenge.title }}</div>
+      <div class="subtitle">Rank {{ challenge.rank }}</div>
+      <div class="progress-bar">
+        <div
+          class="progress-fill"
+          [style.width.%]="getPercent(challenge.progress, challenge.total)"
+        ></div>
+      </div>
+      <div class="progress-text">
+        {{ challenge.progress }}/{{ challenge.total }} tet
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  <h2>League Position</h2>
+  <div class="progress-row">
+    <div class="badge">{{ league.level }}</div>
+    <div class="details">
+      <div class="title">{{ league.name }}</div>
+      <div class="subtitle">
+        Rank {{ league.rank }} {{ league.totalPlayers }}
+      </div>
+      <div class="progress-bar dual">
+        <div
+          class="progress-fill"
+          [style.width.%]="getPercent(league.rankProgress, league.maxProgress)"
+        ></div>
+      </div>
+      <div class="progress-text">
+        Next reward at rank {{ league.rewardRank }}
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  <h2>Friends vs. You</h2>
+  <table class="friends-table">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Rank</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let friend of friends">
+        <td>{{ friend.name }}</td>
+        <td>{{ friend.rank }}</td>
+        <td>
+          <span
+            [ngClass]="{
+              up: friend.trend === 'up',
+              down: friend.trend === 'down'
+            }"
+          >
+            {{
+              friend.trend === "up" ? "↑" : friend.trend === "down" ? "↓" : ""
+            }}
+          </span>
+          {{ friend.score }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

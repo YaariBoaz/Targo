@@ -1,0 +1,56 @@
+<section>
+  <div class="target-insights">
+    <div>
+      <h5>Focus Area</h5>
+      <p>Most missed: Left Shoulder<br />Accuracy: 78%</p>
+    </div>
+    <div>
+      <h5>Bullet Efficiency</h5>
+      <p class="coming-soon">Coming soon…</p>
+    </div>
+  </div>
+
+  <!-- shot-group-placeholder -->
+  <div class="pro-card shot-group">
+    <h5 class="card-title">WEAK POINT</h5>
+
+    <div class="shot-diagnosis">
+      <div class="tager-wrapper">
+        <img src="assets/shot-group-analysis.svg" class="diagnosis-bg" />
+      </div>
+      <div
+        *ngFor="let hit of shotHits"
+        class="shot-dot"
+        [style.left.%]="hit.x"
+        [style.top.%]="hit.y"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Reaction Time -->
+  <div class="pro-card">
+    <h5 class="card-title">REACTION TIME</h5>
+    <canvas
+      baseChart
+      [data]="reactionData"
+      [options]="reactionOpts"
+      [legend]="false"
+      type="line"
+    >
+    </canvas>
+  </div>
+
+  <!-- Weak Point -->
+  <div class="pro-card shot-group-wrapper">
+    <h5 class="card-title">SHOT GROUP</h5>
+    <div class="shot-group-chart">
+      <img src="assets/target-reticle-white.png" class="target-img" />
+      <div
+        *ngFor="let shot of shots"
+        class="shot-dot"
+        [style.left.%]="shot.x"
+        [style.top.%]="shot.y"
+      ></div>
+    </div>
+  </div>
+</section>

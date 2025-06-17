@@ -1,0 +1,11 @@
+<div class="ranking-board">
+  <h2 class="title">RANKING</h2>
+  <ul class="list">
+    <li *ngFor="let user of ranking" [class.current-user]="user.isYou">
+      <span class="rank">{{ ranking.indexOf(user) + 1 }}</span>
+      <img [src]="user.avatar" class="avatar" />
+      <span class="name">{{ user.name }}</span>
+      <span class="points">{{ user.points }} pts</span>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,20 @@
+<div class="table-wrapper">
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Split Time</th>
+        <th>Distance</th>
+        <th>Total Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let stat of stats.slice().reverse()">
+        <td>{{ stat.shotNumber }}</td>
+        <td>{{ stat.splitTime }}s</td>
+        <td>{{ stat.distanceFromCenter }} cm</td>
+        <td>{{ stat.totalElapsed }}s</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

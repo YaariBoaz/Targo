@@ -1,0 +1,116 @@
+<section class="settings-page">
+  <!-- Header -->
+  <header class="settings-header">
+    <h1>Settings</h1>
+    <button class="edit-btn" (click)="toggleEditMode()">
+      ✏️ {{ isEditMode ? "Done" : "Edit" }}
+    </button>
+  </header>
+
+  <!-- Personal Info -->
+  <h2>Personal Info</h2>
+  <div class="settings-group">
+    <!-- Avatar -->
+    <div class="setting-row avatar-setting">
+      <span class="setting-key">Avatar</span>
+      <div class="avatar-cell">
+        <img src="https://i.pravatar.cc/" class="avatar" />
+        <input
+          *ngIf="isEditMode"
+          type="file"
+          accept="image/*"
+          (change)="onAvatarChange($event)"
+        />
+      </div>
+    </div>
+
+    <!-- First Name -->
+    <div class="setting-row">
+      <span class="setting-key">First Name</span>
+      <span *ngIf="!isEditMode" class="setting-value">{{
+        user.firstName
+      }}</span>
+      <input *ngIf="isEditMode" [(ngModel)]="user.firstName" />
+    </div>
+
+    <!-- Last Name -->
+    <div class="setting-row">
+      <span class="setting-key">Last Name</span>
+      <span *ngIf="!isEditMode" class="setting-value">{{ user.lastName }}</span>
+      <input *ngIf="isEditMode" [(ngModel)]="user.lastName" />
+    </div>
+
+    <!-- Username -->
+    <div class="setting-row">
+      <span class="setting-key">Username</span>
+      <span *ngIf="!isEditMode" class="setting-value">{{ user.username }}</span>
+      <input *ngIf="isEditMode" [(ngModel)]="user.username" />
+    </div>
+
+    <!-- Email (read-only always) -->
+    <div class="setting-row">
+      <span class="setting-key">Email</span>
+      <span class="setting-value">{{ user.email }}</span>
+    </div>
+
+    <!-- Notifications -->
+    <div class="setting-row">
+      <span class="setting-key">Notifications</span>
+      <span *ngIf="!isEditMode" class="setting-value">{{
+        user.notifications ? "Enabled" : "Disabled"
+      }}</span>
+      <input
+        *ngIf="isEditMode"
+        type="checkbox"
+        [(ngModel)]="user.notifications"
+      />
+    </div>
+  </div>
+
+  <!-- Weapon Settings -->
+  <h2>Weapon Settings</h2>
+  <div class="settings-group">
+    <div class="setting-row">
+      <span class="setting-key">Weapon Type</span>
+      <span *ngIf="!isEditMode" class="setting-value">{{
+        settings.weapon
+      }}</span>
+      <select *ngIf="isEditMode" [(ngModel)]="settings.weapon">
+        <option>Pistol</option>
+        <option>Rifle</option>
+        <option>Shotgun</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-key">Preferred Distance</span>
+      <span *ngIf="!isEditMode" class="setting-value">{{
+        settings.distance
+      }}</span>
+      <select *ngIf="isEditMode" [(ngModel)]="settings.distance">
+        <option>25 m</option>
+        <option>50 m</option>
+        <option>100 m</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-key">Target Type</span>
+      <span *ngIf="!isEditMode" class="setting-value">{{
+        settings.target
+      }}</span>
+      <select *ngIf="isEditMode" [(ngModel)]="settings.target">
+        <option>Standard Bullseye</option>
+        <option>Silhouette</option>
+        <option>Zone-Based Diagnosis</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Logout -->
+  <div class="logout-wrap">
+    <button *ngIf="!isEditMode" class="logout-btn" (click)="logout()">
+      Logout
+    </button>
+  </div>
+</section>
