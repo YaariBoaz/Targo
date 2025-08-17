@@ -3,7 +3,7 @@
     "@ionic/angular/common",
     "@ionic/angular"
   ],
-  "java.configuration.updateBuildConfiguration": "interactive",
+  "java.configuration.updateBuildConfiguration": "automatic",
   "genieai.enableConversationHistory": true,
   "genieai.response.showNotification": true
 }

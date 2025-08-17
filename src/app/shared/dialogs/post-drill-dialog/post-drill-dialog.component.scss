@@ -1,0 +1,105 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &::before {
+    /* dark blur */
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(4px);
+    background: rgba(#0d1115, 0.75);
+  }
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  width: 90%;
+  max-width: 340px;
+  padding: 2rem 1.5rem 1.75rem;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(#c9a84e, 0.25);
+  box-shadow: 0 8px 28px rgba(#000, 0.8);
+  text-align: center;
+  overflow: hidden;
+  height: 75%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  ssss h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #c9a84e;
+    margin-bottom: 0.75rem;
+  }
+  p {
+    color: #ccc;
+    font-size: 1rem;
+    margin: 0 0 1.1rem;
+  }
+
+  .countdown-number {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #c9a84e;
+    margin-bottom: 1rem;
+  }
+
+  /* progress bar */
+  .progress-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 6px;
+    width: 100%;
+    background: rgba(#fff, 0.1);
+  }
+  .progress-fill {
+    height: 100%;
+    background: #c9a84e;
+    transition: width 0.95s linear;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    width: 100%;
+
+    button {
+      flex: 1;
+      padding: 0.6rem 0;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+    .primary {
+      background: #c9a84e;
+      color: #000;
+    }
+    .secondary {
+      background: #1e1e1e;
+      color: #fff;
+      border-color: #555;
+    }
+    .exit {
+      background: transparent;
+      color: #999;
+      border-color: #555;
+    }
+  }
+}

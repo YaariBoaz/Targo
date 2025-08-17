@@ -2,10 +2,10 @@
   <!-- Profile Header -->
   <div class="profile-wrapper">
     <div class="avatar-wrapper">
-      <img src="https://i.pravatar.cc/" class="avatar" />
+      <img [src]="user.imgUrl" class="avatar" />
       <span *ngIf="user.isPro" class="pro-badge">PRO</span>
     </div>
-    <h2 class="username">{{ user.name }}</h2>
+    <h2 class="username">{{ user.nickname }}</h2>
     <button class="outlined-btn" (click)="editProfile()">Edit Profile</button>
   </div>
 
@@ -23,11 +23,11 @@
       <mat-icon>military_tech</mat-icon>
       Achievements & Badges
     </button>
-
+    <!--
     <button class="icon-btn" (click)="goToStats()">
       <mat-icon>bar_chart</mat-icon>
       My Stats
-    </button>
+    </button> -->
 
     <button class="icon-btn" (click)="goToRank()">
       <mat-icon>emoji_events</mat-icon>
@@ -42,6 +42,11 @@
     <button class="icon-btn" (click)="goToHelp()">
       <mat-icon>help_outline</mat-icon>
       Help & Support
+    </button>
+
+    <button class="icon-btn" (click)="logout()">
+      <mat-icon>help_outline</mat-icon>
+      Logout
     </button>
   </div>
 </div>

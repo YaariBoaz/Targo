@@ -67,14 +67,16 @@
       }
     }
 
-    .custom-distance .highlighted {
-      background-color: #1f242b;
-      border: 1px solid #555;
-      color: #fff;
-      padding: 10px 16px;
+    .custom-distance {
+      width: 100%;
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #c9a84e;
+      background-color: #0f1318;
+      color: #c9a84e;
       font-size: 16px;
       border-radius: 10px;
-      font-weight: bold;
+      font-weight: 600;
     }
   }
 
@@ -102,13 +104,16 @@
     }
   }
 
-  .bullet-stepper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #555;
+  .bullet-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #c9a84e;
+    background-color: #0f1318;
+    color: #c9a84e;
+    font-size: 16px;
     border-radius: 10px;
-    padding: 10px 16px;
+    font-weight: 600;
+    width: 100%;
 
     button {
       background: none;

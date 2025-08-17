@@ -1,52 +1,34 @@
-#container {
-  text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+.home-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; // full viewport
+  width: 100%;
+  background-color: #0d1115;
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
-
-::ng-deep .toolbar-container {
-  --background: red;
-}
-
-ion-toolbar::part(toolbar-background) {
-  background: #222;
+.global-header {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding-left: 1rem;
+  background-color: #0d1115;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+  z-index: 2;
 }
 
 .back-button {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 9999;
-
-  background: #0b111d;
+  background: none;
+  border: none;
   color: #c9a84e;
-  border: 1px solid #c9a84e;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
   font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
 
-  pointer-events: auto;
+.screen-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 }

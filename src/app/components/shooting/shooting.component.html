@@ -1,47 +1,104 @@
 <div class="shooting-screen">
-  <!-- Bullet Counter -->
-
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div class="timer">{{ elapsedTime | date : "mm:ss" }}</div>
-    <div class="bullet-counter">
-      <img src="assets/bullet.png" alt="bullet" />
-      <span>{{ bulletsLeft }}</span>
+  <!-- Challenge intro overlay -->
+  @if (showIntro()) {
+  <div class="challenge-overlay">
+    <div class="challenge-info">
+      <h2>{{ challenge.overlay.title }}</h2>
+      <p>{{ challenge.overlay.description }}</p>
+      <button (click)="startCountdown()">{{ challenge.buttons.start }}</button>
     </div>
-    <button class="stop-button" (click)="endDrill()">STOP</button>
   </div>
+  }
 
-  <!-- Target Area -->
-  <div class="target-area" [class.finished]="!isDrillComplete">
-    <div class="drill-complete-overlay" *ngIf="isFinished">
-      <h2 class="complete-title">🎯 Drill Complete</h2>
-      <p class="summary">Nice shooting! You fired {{ totalShots }} rounds.</p>
+  <!-- Countdown overlay -->
+  @if (countdownActive() && countdown() > 0) {
+  <div class="countdown-overlay1">
+    <div class="countdown-number">{{ countdown() }}</div>
+  </div>
+  }
 
+  <!-- GO overlay -->
+  @if (showGo()) {
+  <div class="go-overlay1">
+    <div class="go-text">GO!</div>
+  </div>
+  }
+
+  <!-- Top bar with timer & bullets -->
+  @if (!showIntro() && !countdownActive() && !showGo()) {
+  <div class="top-bar">
+    <div class="timer">{{ state.elapsedTime() * 1000 | date : "mm:ss" }}</div>
+    <div class="bullet-counter">
+      <span
+        >{{ state.trainingConfig().bullets }} / {{ state.totalShots() }}</span
+      >
+    </div>
+    <!-- NEW grouping score element -->
+    <div class="grouping-score">
+      {{ state.avgDistance() | number : "1.1-1" }}cm
+      <span>Grouping</span>
+    </div>
+    <button class="stop-button" (click)="endDrill()">
+      {{ challenge.buttons.finish }}
+    </button>
+  </div>
+  }
+
+  <!-- Target area -->
+  <div class="target-area" [class.finished]="blockDrill">
+    @if (state.isDrillComplete()) {
+    <div class="drill-complete-overlay">
+      <h2 class="complete-title">{{ challenge.completeTitle }}</h2>
+      <p class="summary">{{ challenge.completeMessage(state.totalShots()) }}</p>
       <div class="actions">
-        <button (click)="retry()">🔁 Retry</button>
-        <button (click)="viewStats()">📊 View Stats</button>
-        <button (click)="exit()">🏁 Exit</button>
+        <button (click)="retry()">{{ challenge.buttons.retry }}</button>
+        <button (click)="openStats()">{{ challenge.buttons.stats }}</button>
+        <button (click)="exit()">{{ challenge.buttons.exit }}</button>
       </div>
     </div>
-    <div class="target-wrapper">
-      <img
-        src="https://www.activesgcircle.gov.sg/hs-fs/hubfs/Circle%202.0%20-%202021/images/SS_Graphic02_Target_CMYK.jpeg?width=1041&name=SS_Graphic02_Target_CMYK.jpeg"
-        alt="Target"
-      />
+    }
 
-      <!-- Shot Impacts -->
+    <div class="target-wrapper">
+      <img src="assets/targets/128/e128_score_finish.png" alt="Target" />
+      @for (hit of state.hitPoints(); track $index) {
       <div
         class="impact-marker"
-        *ngFor="let hit of hitPoints; let i = index"
+        [attr.data-num]="$index + 1"
         [style.top.%]="hit.y"
-        [class.last-shot]="i === hitPoints.length - 1"
         [style.left.%]="hit.x"
+        [class.last-shot]="$index === state.hitPoints().length - 1"
       ></div>
+      }
     </div>
   </div>
-  <button class="end-drill" *ngIf="isDrillComplete" (click)="isFinished = true">
-    Finish Drill
-  </button>
-  <!-- Floating View Stats Button -->
-  <button class="view-stats-button" (click)="viewStats()">View Stats</button>
+
+  <!-- Bottom stats strip -->
+  <div class="stats-strip" (panup)="openStats()">
+    <div class="strip-arrow">▲</div>
+
+    <div class="strip-row strip-head">
+      <span>Shots</span>
+      <span>Avg Split</span>
+      <span>Avg Dist</span>
+      <span>Total Time</span>
+    </div>
+
+    <div class="strip-row strip-data">
+      <span>{{ state.totalShots() }}</span>
+      <span>{{ state.avgSplitTime() | number : "1.2-2" }}s</span>
+      <span>{{ state.avgDistance() | number : "1.1-1" }}cm</span>
+      <span>{{ state.elapsedTime() * 1000 | date : "mm:ss" }}</span>
+    </div>
+  </div>
+
+  <!-- Post-drill dialog overlay -->
+  @if (showPostOverlay()) {
+  <app-post-drill-dialog
+    [mode]="state.currentMode()"
+    [hitRate]="0"
+    [hasNextStep]="false"
+    [bgImage]="'/assets/challenges/c3.png'"
+    (close)="onOverlayResult($event)"
+  ></app-post-drill-dialog>
+  }
 </div>

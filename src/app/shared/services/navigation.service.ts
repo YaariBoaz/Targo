@@ -14,6 +14,7 @@ export interface StackEntry {
 export class NavigationService {
   private stack: StackEntry[] = [];
   private componentKey = 0;
+  isInShooting = false;
 
   private stack$ = new BehaviorSubject<StackEntry[]>([]);
   public stackChanges$ = this.stack$.asObservable();

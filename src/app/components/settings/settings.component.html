@@ -27,24 +27,22 @@
     <!-- First Name -->
     <div class="setting-row">
       <span class="setting-key">First Name</span>
-      <span *ngIf="!isEditMode" class="setting-value">{{
-        user.firstName
-      }}</span>
-      <input *ngIf="isEditMode" [(ngModel)]="user.firstName" />
+      <span *ngIf="!isEditMode" class="setting-value">{{ user.nickname }}</span>
+      <input *ngIf="isEditMode" [(ngModel)]="user.nickname" />
     </div>
 
     <!-- Last Name -->
     <div class="setting-row">
       <span class="setting-key">Last Name</span>
-      <span *ngIf="!isEditMode" class="setting-value">{{ user.lastName }}</span>
-      <input *ngIf="isEditMode" [(ngModel)]="user.lastName" />
+      <span *ngIf="!isEditMode" class="setting-value">{{ user.nickname }}</span>
+      <input *ngIf="isEditMode" [(ngModel)]="user.nickname" />
     </div>
 
     <!-- Username -->
     <div class="setting-row">
       <span class="setting-key">Username</span>
-      <span *ngIf="!isEditMode" class="setting-value">{{ user.username }}</span>
-      <input *ngIf="isEditMode" [(ngModel)]="user.username" />
+      <span *ngIf="!isEditMode" class="setting-value">{{ user.nickname }}</span>
+      <input *ngIf="isEditMode" [(ngModel)]="user.nickname" />
     </div>
 
     <!-- Email (read-only always) -->
@@ -53,35 +51,21 @@
       <span class="setting-value">{{ user.email }}</span>
     </div>
 
-    <!-- Notifications -->
-    <div class="setting-row">
-      <span class="setting-key">Notifications</span>
-      <span *ngIf="!isEditMode" class="setting-value">{{
-        user.notifications ? "Enabled" : "Disabled"
-      }}</span>
-      <input
-        *ngIf="isEditMode"
-        type="checkbox"
-        [(ngModel)]="user.notifications"
-      />
+    <!-- Weapon Settings -->
+    <h2>Weapon Settings</h2>
+    <div class="settings-group">
+      <div class="setting-row">
+        <span class="setting-key">Weapon Type</span>
+        <span *ngIf="!isEditMode" class="setting-value">{{
+          settings.weapon
+        }}</span>
+        <select *ngIf="isEditMode" [(ngModel)]="settings.weapon">
+          <option>Pistol</option>
+          <option>Rifle</option>
+          <option>Shotgun</option>
+        </select>
+      </div>
     </div>
-  </div>
-
-  <!-- Weapon Settings -->
-  <h2>Weapon Settings</h2>
-  <div class="settings-group">
-    <div class="setting-row">
-      <span class="setting-key">Weapon Type</span>
-      <span *ngIf="!isEditMode" class="setting-value">{{
-        settings.weapon
-      }}</span>
-      <select *ngIf="isEditMode" [(ngModel)]="settings.weapon">
-        <option>Pistol</option>
-        <option>Rifle</option>
-        <option>Shotgun</option>
-      </select>
-    </div>
-
     <div class="setting-row">
       <span class="setting-key">Preferred Distance</span>
       <span *ngIf="!isEditMode" class="setting-value">{{

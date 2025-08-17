@@ -1,6 +1,8 @@
+import { UserStoreService } from './../../shared/services/authentication/user-store.service';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { User } from 'src/app/shared/models/shot-stat';
 
 @Component({
   selector: 'app-settings',
@@ -10,35 +12,26 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./settings.component.scss'],
 })
 export class SettingsComponent {
+  user: User;
+  settings = {
+    weapon: '',
+    distance: 0,
+    target: '',
+  };
+  constructor(private userStoreService: UserStoreService) {
+    this.user = this.userStoreService.user;
+  }
   /* ───────── Mode ───────── */
   isEditMode = false;
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
   }
 
-  /* ───────── User Data ───────── */
-  defaultAvatar = 'assets/avatar-default.png';
-  user = {
-    avatarUrl: '',
-    firstName: 'John',
-    lastName: 'Doe',
-    username: 'shooterX',
-    email: 'shooter@example.com',
-    notifications: true,
-  };
-
-  /* ───────── Shooting Setup ───────── */
-  settings = {
-    weapon: 'Pistol',
-    distance: '25 m',
-    target: 'Standard Bullseye',
-  };
-
   onAvatarChange(evt: Event) {
     const file = (evt.target as HTMLInputElement).files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => (this.user.avatarUrl = reader.result as string);
+    reader.onload = () => (this.user.imgUrl = reader.result as string);
     reader.readAsDataURL(file);
   }
 

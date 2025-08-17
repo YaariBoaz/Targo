@@ -22,13 +22,13 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
-body{
+@import "@ionic/angular/css/palettes/dark.system.css";
+body {
   overflow-y: auto;
 }
 ion-toolbar::part(container) {
   background: #222;
-  color:white;
+  color: white;
 }
 
 .safe-bottom {
@@ -40,4 +40,82 @@ ion-toolbar::part(container) {
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
+}
+
+/* ───────────────────────────────────────────── */
+/*  POST-DRILL  DIALOG  – tactical dark theme   */
+/* ───────────────────────────────────────────── */
+
+::ng-deep .post-drill-dialog .mat-dialog-container {
+  /* bg image dimmed + blur */
+  background: url("/assets/challenges/c1.png") center/cover no-repeat, #0d1115;
+  border: 1px solid rgba(#c9a84e, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(#000, 0.8);
+  padding: 28px 24px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* frosted overlay for readability */
+::ng-deep .post-drill-dialog .mat-dialog-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(6px);
+  background: rgba(#0d1115, 0.7);
+  border-radius: inherit;
+  z-index: 0;
+}
+
+/* put all dialog content above overlay */
+::ng-deep .post-drill-dialog .mat-dialog-content,
+::ng-deep .post-drill-dialog .mat-dialog-title,
+::ng-deep .post-drill-dialog .mat-dialog-actions {
+  position: relative;
+  z-index: 1;
+}
+
+/* headline + body */
+.dialog-headline {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #c9a84e;
+  margin-bottom: 0.75rem;
+}
+
+.dialog-body p {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #ddd;
+}
+
+.countdown {
+  font-weight: 700;
+  color: #c9a84e;
+  font-size: 0.95rem;
+}
+
+/* actions row */
+.dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+
+  button.mat-flat-button {
+    min-width: 96px;
+    font-weight: 700;
+  }
+
+  .exit-btn {
+    color: #bbb;
+    border-color: #555;
+  }
+}
+
+/* subtle button hover */
+button.mat-flat-button:hover,
+button.mat-stroked-button:hover {
+  transform: scale(1.04);
 }

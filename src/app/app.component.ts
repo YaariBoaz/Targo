@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
-import { HomePage } from "./home/home.page";
+import { HomePage } from './home/home.page';
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 import { App } from '@capacitor/app';
 import { NavigationService } from './shared/services/navigation.service';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   imports: [HomePage],
-  standalone:true,
-
+  standalone: true,
 })
 export class AppComponent {
   constructor(private nav: NavigationService) {
@@ -25,7 +25,6 @@ export class AppComponent {
   }
 
   async changeColor() {
-   await EdgeToEdge.setBackgroundColor({ color: '#ffffff' }); // Replace with your desired color
-
+    await EdgeToEdge.setBackgroundColor({ color: '#ffffff' }); // Replace with your desired color
   }
 }

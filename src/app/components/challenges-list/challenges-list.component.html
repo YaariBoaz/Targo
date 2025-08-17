@@ -1,32 +1,22 @@
 <div class="challenge-list">
-  <div class="header">
-    <h2>Challenges</h2>
-    <input
-      type="text"
-      [(ngModel)]="searchTerm"
-      (input)="filterChallenges()"
-      placeholder="Search challenges..."
-    />
+  <!-- Tabs -->
+  <div class="tab-row">
+    <button
+      *ngFor="let tab of tabs"
+      class="tab"
+      [class.active]="activeTab === tab.key"
+      (click)="onTabClick(tab.key)"
+    >
+      {{ tab.label }}
+    </button>
   </div>
 
+  <!-- Challenge Cards -->
   <div class="challenge-scroll">
-    <div class="section-title" *ngIf="filteredMyChallenges.length > 0">
-      MY CHALLENGES
-    </div>
     <app-challenge-card
-      *ngFor="let c of filteredMyChallenges"
+      *ngFor="let c of filteredChallenges"
       [challenge]="c"
-      cardType="mine"
-      (click)="onChallengeClick(c)"
-    ></app-challenge-card>
-
-    <div class="section-title" *ngIf="filteredGlobalChallenges.length > 0">
-      GLOBAL CHALLENGES
-    </div>
-    <app-challenge-card
-      *ngFor="let c of filteredGlobalChallenges"
-      [challenge]="c"
-      cardType="global"
+      [cardType]="c.type"
       (click)="onChallengeClick(c)"
     ></app-challenge-card>
   </div>

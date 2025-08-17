@@ -1,4 +1,9 @@
-import { bootstrapApplication } from '@angular/platform-browser';
+import { bootstrapApplication, HammerModule } from '@angular/platform-browser';
+import 'hammerjs';
+import {
+  HammerGestureConfig,
+  HAMMER_GESTURE_CONFIG,
+} from '@angular/platform-browser';
 import {
   RouteReuseStrategy,
   provideRouter,
@@ -27,7 +32,11 @@ import {
   ScatterController,
   DoughnutController,
 } from 'chart.js';
-
+import { AppHammerConfig } from './app/shared/services/app-hammer-config.service';
+import { importProvidersFrom } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
+import { Clock3, Crosshair, Focus, Percent, Trophy, Globe } from 'lucide'; // ✅ RIGHT import
+import { FirebaseService } from './app/shared/services/firebase.service';
 Chart.register(
   LineController,
   LineElement,
@@ -46,8 +55,21 @@ Chart.register(
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    FirebaseService,
+    importProvidersFrom(HammerModule),
+    { provide: HAMMER_GESTURE_CONFIG, useClass: AppHammerConfig },
     provideIonicAngular(),
     provideAnimations(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
+    importProvidersFrom(
+      LucideAngularModule.pick({
+        Clock3,
+        Crosshair,
+        Focus,
+        Percent,
+        Trophy,
+        Globe,
+      })
+    ),
   ],
 });

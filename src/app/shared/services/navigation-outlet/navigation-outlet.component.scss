@@ -9,7 +9,7 @@
   transition: transform 0.3s ease, opacity 0.3s ease;
   overflow: hidden;
   // 🛡️ Make room for back button
-  padding-top: calc(env(safe-area-inset-top, 16px) + 48px);
+  padding-top: calc(env(safe-area-inset-top, 16px) + 15px);
 
   &.android-transition {
     &.entering {

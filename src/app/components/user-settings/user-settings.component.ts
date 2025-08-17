@@ -6,7 +6,11 @@ import {
   ScreenComponentMap,
   ScreenState,
 } from 'src/app/shared/models/screen-state';
+import { AuthService } from 'src/app/shared/services/authentication/auth.service';
 import { NavigationService } from 'src/app/shared/services/navigation.service';
+import { WelcomeComponent } from '../welcome/welcome.component';
+import { User } from 'src/app/shared/models/shot-stat';
+import { UserStoreService } from 'src/app/shared/services/authentication/user-store.service';
 
 @Component({
   selector: 'app-user-settings',
@@ -16,15 +20,17 @@ import { NavigationService } from 'src/app/shared/services/navigation.service';
   imports: [MatIcon, CommonModule, FormsModule],
 })
 export class UserSettingsComponent implements OnInit {
-  constructor(private nav: NavigationService) {}
+  constructor(
+    private nav: NavigationService,
+    private authService: AuthService,
+    private userStoreService: UserStoreService
+  ) {}
 
-  user = {
-    name: 'ALON',
-    avatarUrl: 'assets/images/avatar-default.jpg',
-    isPro: true, // or false to test both flows
-  };
+  user!: User;
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.user = this.userStoreService.user;
+  }
 
   editProfile() {
     /* ... */
@@ -46,5 +52,16 @@ export class UserSettingsComponent implements OnInit {
   }
   goToUpgrade() {
     this.user.isPro = false;
+  }
+
+  logout() {
+    this.authService
+      .logoutFromAllProviders()
+      .then(() => {
+        this.nav.reset(WelcomeComponent);
+      })
+      .catch((error) => {
+        console.error('Logout failed:', error);
+      });
   }
 }

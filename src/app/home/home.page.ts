@@ -4,6 +4,8 @@ import { ScreenComponentMap, ScreenState } from '../shared/models/screen-state';
 import { NavigationOutletComponent } from '../shared/services/navigation-outlet/navigation-outlet.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Capacitor } from '@capacitor/core';
+import { AuthService } from '../shared/services/authentication/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -14,12 +16,21 @@ import { FormsModule } from '@angular/forms';
 export class HomePage {
   @ViewChild('container', { read: ViewContainerRef, static: true })
   container!: ViewContainerRef;
+  isApple =
+    Capacitor.getPlatform() === 'ios' || Capacitor.getPlatform() === 'mac';
 
-  constructor(public nav: NavigationService) {}
+  constructor(
+    public nav: NavigationService,
+    private authService: AuthService
+  ) {}
 
   ngAfterViewInit() {
     setTimeout(() => {
-      this.nav.reset(ScreenComponentMap[ScreenState.Dashboard]);
+      if (this.authService.isLoggedIn()) {
+        this.nav.reset(ScreenComponentMap[ScreenState.Dashboard]);
+      } else {
+        this.nav.reset(ScreenComponentMap[ScreenState.Welcome]);
+      }
     });
   }
 

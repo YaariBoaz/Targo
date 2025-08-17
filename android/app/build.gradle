@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "io.ionic.starter"
+    namespace "com.adl.targo"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "io.ionic.starter"
+        applicationId "com.adl.targo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -40,6 +40,11 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    implementation 'com.google.firebase:firebase-auth:22.3.1'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+     implementation 'com.facebook.android:facebook-login:16.2.0'
+    implementation 'com.facebook.android:facebook-core:16.2.0'
+    implementation 'com.facebook.android:facebook-common:16.2.0'
 }
 
 apply from: 'capacitor.build.gradle'

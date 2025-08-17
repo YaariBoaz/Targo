@@ -6,51 +6,63 @@
     <label>Distance</label>
     <div class="distance-selector">
       <div class="preset-options">
-        <select>
-        <option *ngFor="let option of presetDistances"
-                (click)="selectDistance(option)"
-                [class.selected]="selectedDistance === option">
-          {{ option }}
-        </option>
-        </select>
+        <input
+          [(ngModel)]="selectedDistance"
+          type="number"
+          placeholder="Custom Distance (m)"
+          class="custom-distance"
+        />
       </div>
     </div>
   </div>
 
- <!-- Weapon Category -->
-<div class="section">
-  <label>Weapon Category</label>
-  <div class="category-selector">
-    <button [class.selected]="selectedCategory === 'Pistol'" (click)="selectCategory('Pistol')">🔫 Pistol</button>
-    <button [class.selected]="selectedCategory === 'AR'" (click)="selectCategory('AR')">🔧 AR</button>
+  <!-- Weapon Category -->
+  <div class="section">
+    <label>Weapon Category</label>
+    <div class="category-selector">
+      <button
+        [class.selected]="selectedCategory === 'Pistol'"
+        (click)="selectCategory('Pistol')"
+      >
+        Pistol
+      </button>
+      <button
+        [class.selected]="selectedCategory === 'AR'"
+        (click)="selectCategory('AR')"
+      >
+        RIFILE
+      </button>
+    </div>
   </div>
-</div>
 
-<!-- Weapon Type -->
-<div class="section">
-  <label>Weapon Type</label>
-  <div class="weapon-select-wrapper">
-    <select [(ngModel)]="selectedWeapon" (change)="updateSelectedWeaponIcon()">
-      <option *ngFor="let weapon of filteredWeapons" [ngValue]="weapon.name">
-        {{ weapon.name }}
-      </option>
-    </select>
+  <!-- Weapon Type -->
+  <div class="section">
+    <label>Weapon Type</label>
+    <div class="weapon-select-wrapper">
+      <select
+        [(ngModel)]="selectedWeapon"
+        (change)="updateSelectedWeaponIcon()"
+      >
+        <option *ngFor="let weapon of filteredWeapons" [ngValue]="weapon.name">
+          {{ weapon.name }}
+        </option>
+      </select>
+    </div>
   </div>
-</div>
 
   <!-- Bullet Count -->
   <div class="section">
     <label>Number of Bullets</label>
     <div class="bullet-stepper">
-      <button (click)="changeBullets(-1)">−</button>
-      <span>{{ bullets }}</span>
-      <button (click)="changeBullets(1)">+</button>
+      <input type="number" [(ngModel)]="bullets" min="1" class="bullet-input" />
     </div>
   </div>
 
   <!-- Friendly Tip -->
   <div class="tips">
-    <p>💡 Tip: Choose fewer bullets for quick drills, or max out for endurance!</p>
+    <p>
+      💡 Tip: Choose fewer bullets for quick drills, or max out for endurance!
+    </p>
   </div>
 
   <!-- Start Drill Button -->
