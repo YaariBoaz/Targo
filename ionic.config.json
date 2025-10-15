@@ -1,0 +1,7 @@
+{
+  "name": "targo-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
