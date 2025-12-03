@@ -3,6 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
+<<<<<<< HEAD
   production: false,
   firebase: {
     apiKey: 'AIzaSyCWCyHlbBwSzXnJ_7IpFJ2xLcZ--7v8S8Y',
@@ -15,6 +16,9 @@ export const environment = {
   // RevenueCat API Keys for In-App Purchases
   // Test API Key from RevenueCat Dashboard
   revenueCatApiKey: 'test_yYKQILmMdGKlYwWugLwyegRdQzd'
+=======
+  production: false
+>>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
 };
 
 /*

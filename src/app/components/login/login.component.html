@@ -1,0 +1,42 @@
+<div class="login-screen">
+  <h1 class="app-title">ON TARGET</h1>
+  <h2 class="app-subtitle">TACTICAL SHOOTING TRAINER</h2>
+
+  <form [formGroup]="loginForm" (ngSubmit)="loginWithEmailAndPassword()">
+    <label for="nickname">Nickname</label>
+    <input
+      type="text"
+      id="email"
+      formControlName="email"
+      placeholder="Enter your email"
+    />
+
+    <label for="password">Password</label>
+    <div class="password-wrapper">
+      <input
+        [type]="showPassword ? 'text' : 'password'"
+        id="password"
+        formControlName="password"
+        placeholder="Enter your password"
+      />
+      <button type="button" class="toggle-password" (click)="togglePassword()">
+        {{ showPassword ? "🙈" : "👁️" }}
+      </button>
+    </div>
+
+    <button class="primary-btn" type="submit">LOGIN</button>
+  </form>
+  <a *ngIf="wrongPassword">Password and/or Nickname are invalid</a>
+  <div class="links">
+    <button class="text-link" (click)="onForgotPassword()">
+      Forgot password?
+    </button>
+    <p>
+      Don’t have an account?
+      <button class="text-link" (click)="navigateToRegister()">Register</button>
+    </p>
+    <button class="secondary-btn" (click)="continueAsGuest()">
+      Continue as Guest
+    </button>
+  </div>
+</div>

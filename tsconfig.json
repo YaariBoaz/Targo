@@ -5,6 +5,10 @@
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
+<<<<<<< HEAD
+=======
+    "esModuleInterop": true,
+>>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -12,6 +16,7 @@
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
+<<<<<<< HEAD
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "experimentalDecorators": true,
@@ -30,6 +35,15 @@
       "@utils/*": ["src/app/utils/*"],
       "@environments/*": ["src/environments/*"]
     }
+=======
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2022",
+    "module": "es2020",
+    "lib": ["es2018", "dom"],
+    "useDefineForClassFields": false
+>>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

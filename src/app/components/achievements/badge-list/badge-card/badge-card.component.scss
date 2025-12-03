@@ -1,0 +1,67 @@
+.badge-card {
+  display: flex;
+  align-items: center;
+  background: #1d1d1d;
+  border-radius: 12px;
+  padding: 12px;
+  width: 100%;
+  max-width: 350px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  border: 1px solid #333;
+
+  &.locked {
+    opacity: 0.5;
+  }
+
+  .icon {
+    width: 60px;
+    height: 60px;
+    margin-right: 12px;
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .info {
+    flex: 1;
+
+    h4 {
+      font-size: 1.1rem;
+      margin: 0 0 4px;
+      color: #fff;
+    }
+
+    .desc {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .progress {
+      font-size: 0.8rem;
+      color: #c9a84e;
+
+      .bar {
+        height: 6px;
+        background: #333;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 4px;
+
+        .fill {
+          height: 100%;
+          background-color: #c9a84e;
+          transition: width 0.3s ease;
+        }
+      }
+    }
+
+    .status {
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: #888;
+    }
+  }
+}

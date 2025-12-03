@@ -1,3 +1,12 @@
 {
+<<<<<<< HEAD
   "recommendations": ["Webnative.webnative", "google.geminicodeassist"]
 }
+=======
+  "recommendations": [
+    "Webnative.webnative",
+    "Webnative.webnative",
+    "Webnative.webnative"
+  ]
+}
+>>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832

@@ -3,13 +3,26 @@
 # https://github.com/browserslist/browserslist#queries
 
 # For the full list of supported browsers by the Angular framework, please see:
+<<<<<<< HEAD
 # https://angular.dev/reference/versions#browser-support
+=======
+# https://angular.io/guide/browser-support
+>>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
 
 # You can see what browsers were selected by your queries by running:
 #   npx browserslist
 
+<<<<<<< HEAD
 Chrome >=107
 Firefox >=106
 Edge >=107
 Safari >=16.1
 iOS >=16.1
+=======
+Chrome >=79
+ChromeAndroid >=79
+Firefox >=70
+Edge >=79
+Safari >=14
+iOS >=14
+>>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832

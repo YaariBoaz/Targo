@@ -3,6 +3,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
+<<<<<<< HEAD
     "types": []
   },
   "files": [
@@ -12,4 +13,10 @@
   "include": [
     "src/**/*.d.ts"
   ]
+=======
+    "types": ["d3-shape"]
+  },
+  "files": ["src/main.ts", "src/polyfills.ts"],
+  "include": ["src/**/*.d.ts"]
+>>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
 }

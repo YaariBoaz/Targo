@@ -1,0 +1,35 @@
+<div class="challenge-card" [ngClass]="challenge.type">
+  <div class="card-content">
+    <div class="image-container">
+      <img [src]="challenge.image" alt="Challenge image" />
+    </div>
+
+    <div class="info">
+      <div class="title">{{ challenge.title }}</div>
+      <div class="leader">🥇 Leader: {{ challenge.leader }}</div>
+      <div class="xp">🏆 {{ challenge.xp }} XP</div>
+    </div>
+  </div>
+
+  <div class="user-performance">
+    <div class="rank">Rank: #{{ challenge.userRank }} / 1000</div>
+    <div class="score">Score: {{ challenge.userScore }} pts / 🥇 893</div>
+  </div>
+
+  <button class="cta-button">LET’S GO!</button>
+
+  <button class="expand-button" (click)="toggleDetails($event)">
+    {{ expanded ? "Hide Details" : "More Info" }}
+    <span class="arrow">{{ expanded ? "▲" : "▼" }}</span>
+  </button>
+
+  <div class="details" *ngIf="expanded">
+    <img
+      *ngIf="challenge.detailImage"
+      [src]="challenge.detailImage"
+      alt="Hero"
+      class="detail-image"
+    />
+    <p class="detail-text">{{ challenge.details }}</p>
+  </div>
+</div>

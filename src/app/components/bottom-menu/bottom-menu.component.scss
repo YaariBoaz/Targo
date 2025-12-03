@@ -1,0 +1,54 @@
+.bottom-sheet-content {
+  display: flex;
+  flex-direction: column;
+
+  button {
+    background: none;
+    border: none;
+    color: #f2f2f2;
+    font-size: 1rem;
+    text-align: left;
+    padding: 0.75rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    mat-icon {
+      font-size: 20px;
+      color: #c9a84e;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+}
+
+
+::ng-deep .mat-bottom-sheet-container {
+  background:  #0f1418fa;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  border: 1px solid #ffffff26;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  color: #f2f2f2; // 🟡 High contrast text
+}
+
+
+
+
+::ng-deep .mat-bottom-sheet-container {
+  animation: slideUp 300ms ease-in-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

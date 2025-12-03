@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "385051031881",
+    "project_id": "adl-backend",
+    "storage_bucket": "adl-backend.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:385051031881:android:79a3aac5ca81eabae6c298",
+        "android_client_info": {
+          "package_name": "com.adl.targo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "385051031881-cgb46ji7ts8n1rtv28kta11tsqer6p63.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.adl.targo",
+            "certificate_hash": "527c06f18908175b7f6660c84e5f01ac33e4f38c"
+          }
+        },
+        {
+          "client_id": "385051031881-leean8bo1m9oghf6ocbhrgera8q3j0hk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWCyHlbBwSzXnJ_7IpFJ2xLcZ--7v8S8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "385051031881-leean8bo1m9oghf6ocbhrgera8q3j0hk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

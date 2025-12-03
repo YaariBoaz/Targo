@@ -1,0 +1,9 @@
+<div class="home-shell">
+  <div class="global-header" *ngIf="nav.canGoBack() && !nav.isInShooting">
+    <button class="back-button" (click)="goBack()">← Back</button>
+  </div>
+
+  <div class="screen-container">
+    <app-navigation-outlet />
+  </div>
+</div>

@@ -1,0 +1,88 @@
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading-state">
+  <p>Loading your statistics...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="hasError && !isLoading" class="error-state">
+  <p>Unable to load statistics. Please try again.</p>
+  <button (click)="refreshData()">Retry</button>
+</div>
+
+<!-- — KPI GRID (2 rows × 3 cols) — -->
+<div class="kpi-grid" *ngIf="!isLoading && !hasError">
+  <app-kpi
+    icon="crosshair"
+    label="Accuracy"
+    [value]="overviewStats.accuracy + ' cm'"
+  ></app-kpi>
+  <app-kpi
+    icon="clock3"
+    label="AVG Split"
+    [value]="overviewStats.avgSplit"
+  ></app-kpi>
+  <app-kpi
+    icon="focus"
+    label="AVG Grouping"
+    [value]="overviewStats.avgGrouping.toString()"
+  ></app-kpi>
+
+  <app-kpi
+    icon="percent"
+    label="Hit Ratio"
+    [value]="overviewStats.hitRatio + ' %'"
+  ></app-kpi>
+  <app-kpi
+    icon="trophy"
+    label="Challenges Complete"
+    [value]="overviewStats.challengesComplete + ' %'"
+  ></app-kpi>
+  <app-kpi
+    icon="globe"
+    label="Global Rank"
+    [value]="'#' + overviewStats.globalRank"
+  ></app-kpi>
+</div>
+
+<!-- Nudge Card -->
+<div class="bottom-row" *ngIf="!isLoading && !hasError">
+  <section class="nudge bg" *ngIf="primarySuggestion">
+    <h3>{{ primarySuggestion.description || "Improve your performance." }}</h3>
+    <p class="caption">
+      Try <strong>{{ primarySuggestion.name }}</strong>
+    </p>
+    <button class="cta" (click)="startChallenge(primarySuggestion.id)">
+      Shoot Now →
+    </button>
+  </section>
+</div>
+<!-- — CHART + SMART NUDGE ROW — -->
+<div class="bottom-row" *ngIf="!isLoading && !hasError">
+  <!-- Weekly Activity Chart -->
+  <div class="chart-card">
+    <label class="chart-title">WEEKLY ACTIVITY</label>
+    <div *ngIf="chartData.length > 0; else noActivityData">
+      <ngx-charts-bar-vertical
+        [results]="chartData"
+        [scheme]="barColor"
+        [xAxis]="true"
+        [yAxis]="false"
+        [showGridLines]="false"
+        [showXAxisLabel]="false"
+        [showYAxisLabel]="false"
+        [roundEdges]="true"
+        [barPadding]="10"
+        [view]="[300, 120]"
+      >
+      </ngx-charts-bar-vertical>
+    </div>
+    <ng-template #noActivityData>
+      <div class="no-activity">
+        <p>No activity data yet</p>
+        <p class="caption">
+          Complete some shooting sessions to see your weekly activity
+        </p>
+      </div>
+    </ng-template>
+  </div>
+</div>

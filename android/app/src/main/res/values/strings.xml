@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Targo</string>
+    <string name="title_activity_main">Targo</string>
+    <string name="package_name">com.adl.targo</string>
+    <string name="custom_url_scheme">com.adl.targo</string>
+  <string name="facebook_app_id">1263382421831981</string>
+  <string name="fb_login_protocol_scheme">fb1263382421831981</string>
+  <string name="facebook_client_token">373ee7e54da924324ba65932e24df5bf</string>
+
+</resources>

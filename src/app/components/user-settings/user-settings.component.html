@@ -1,0 +1,52 @@
+<div class="user-settings">
+  <!-- Profile Header -->
+  <div class="profile-wrapper">
+    <div class="avatar-wrapper">
+      <img [src]="user.imgUrl" class="avatar" />
+      <span *ngIf="user.isPro" class="pro-badge">PRO</span>
+    </div>
+    <h2 class="username">{{ user.nickname }}</h2>
+    <button class="outlined-btn" (click)="editProfile()">Edit Profile</button>
+  </div>
+
+  <!-- Pro CTA -->
+  <div *ngIf="!user.isPro" class="pro-cta">
+    <p>Unlock exclusive features & save 5% on bullets 💥</p>
+    <button class="pro-upgrade-btn" (click)="goToUpgrade()">
+      Upgrade to Pro
+    </button>
+  </div>
+
+  <!-- Settings List -->
+  <div class="settings-list">
+    <button class="icon-btn" (click)="goToAchievements()">
+      <mat-icon>military_tech</mat-icon>
+      Achievements & Badges
+    </button>
+    <!--
+    <button class="icon-btn" (click)="goToStats()">
+      <mat-icon>bar_chart</mat-icon>
+      My Stats
+    </button> -->
+
+    <button class="icon-btn" (click)="goToRank()">
+      <mat-icon>emoji_events</mat-icon>
+      Rank Progress
+    </button>
+
+    <button class="icon-btn" (click)="goToSettings()">
+      <mat-icon>settings</mat-icon>
+      Settings
+    </button>
+
+    <button class="icon-btn" (click)="goToHelp()">
+      <mat-icon>help_outline</mat-icon>
+      Help & Support
+    </button>
+
+    <button class="icon-btn" (click)="logout()">
+      <mat-icon>help_outline</mat-icon>
+      Logout
+    </button>
+  </div>
+</div>

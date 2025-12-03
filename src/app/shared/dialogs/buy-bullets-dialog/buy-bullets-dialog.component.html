@@ -1,0 +1,36 @@
+<div class="buy-bullets-dialog">
+  <!-- Pro Plan Centered -->
+  <div class="pro-plan">
+    <h2>🔥 Go Pro & Shoot More</h2>
+    <ul>
+      <li>✔️ +100 bullets instantly</li>
+      <li>✔️ 5% off all future bullets</li>
+      <li>✔️ Exclusive challenges</li>
+      <li>✔️ Deep shooting statistics</li>
+      <li>✔️ All future premium features</li>
+    </ul>
+    <button class="subscribe-btn" (click)="subscribeToPro()">
+      Subscribe to Pro ($10)
+    </button>
+  </div>
+
+  <!-- Divider -->
+  <div class="divider">
+    <span>or buy one-time packs</span>
+  </div>
+
+  <!-- Bullet Packs -->
+  <div class="bullet-options">
+    <div
+      class="bullet-pack"
+      *ngFor="let pack of bulletPacks"
+      (click)="buyPack(pack)"
+    >
+      <div class="count">{{ pack.count }} Bullets</div>
+      <div class="price">${{ pack.price }}</div>
+    </div>
+  </div>
+
+  <!-- Cancel Option -->
+  <button class="cancel-btn" (click)="dialogRef.close()">Cancel</button>
+</div>

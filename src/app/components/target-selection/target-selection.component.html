@@ -1,0 +1,26 @@
+<!-- Scan Button -->
+<button class="scan-button" (click)="scanForTargets()" [disabled]="scanning">
+  <i class="icon-scan"></i> Scan for Targets
+</button>
+
+<!-- Scanning Overlay -->
+<div class="scan-overlay" *ngIf="scanning">
+  <div class="scanner-container">
+    <div class="radar">
+      <div class="radar-sweep"></div>
+    </div>
+    <div class="scanner-text">Scanning for targets...</div>
+  </div>
+</div>
+
+<!-- Target List -->
+<div class="target-selection">
+  <div class="section-title">Available Targets</div>
+  <div class="target-list">
+    <app-target-card
+      *ngFor="let target of targets"
+      [target]="target"
+      (connect)="onConnect()"
+    ></app-target-card>
+  </div>
+</div>

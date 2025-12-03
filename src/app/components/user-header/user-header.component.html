@@ -1,0 +1,23 @@
+<section class="user-header">
+  <!-- Title -->
+  <main>
+    <!-- Avatar + Settings Cog -->
+
+    <div class="avatar-wrapper">
+      <img [src]="user.imgUrl" alt="Avatar" class="avatar" />
+      <button class="settings-btn" (click)="goToSettings()">
+        <mat-icon>settings</mat-icon>
+      </button>
+    </div>
+
+    <header class="title">ON TARGET</header>
+
+    <!-- Rank + Score -->
+    <div class="rank-summary">
+      <img src="assets/dominator_badge.png" alt="Badge" class="badge" />
+      <!-- <p class="rank-name">{{ rankName }}</p> -->
+      <p class="score">{{ score | number }} XP</p>
+    </div>
+  </main>
+  salute {{ user.nickname }}!
+</section>

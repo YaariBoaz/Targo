@@ -1,0 +1,184 @@
+.drill-setup-container {
+  background: linear-gradient(to bottom, #111419, #0d0f12);
+  padding: 28px 24px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  color: #c9a84e;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  label {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ccc;
+  }
+
+  .distance-selector {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    width: 100%;
+    .preset-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      width: 100%;
+      select {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background-color: #0f1318;
+        color: #ffd700;
+        font-size: 16px;
+        font-weight: 600;
+        border: 1px solid #d4af37;
+        appearance: none;
+
+        // Optional custom dropdown arrow
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='%23FFD700' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23FFD700' stroke-width='2'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px 8px;
+
+        option {
+          background-color: #181c22;
+          color: #fff;
+          font-size: 16px;
+          text-align: center;
+        }
+
+        &:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.4);
+        }
+      }
+    }
+
+    .custom-distance {
+      width: 100%;
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #c9a84e;
+      background-color: #0f1318;
+      color: #c9a84e;
+      font-size: 16px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+  }
+
+  .weapon-select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .weapon-icon {
+      height: 32px;
+      width: auto;
+    }
+
+    select {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #c9a84e;
+      background-color: #0f1318;
+      color: #c9a84e;
+      font-size: 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      appearance: none;
+    }
+  }
+
+  .bullet-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #c9a84e;
+    background-color: #0f1318;
+    color: #c9a84e;
+    font-size: 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    width: 100%;
+
+    button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    span {
+      font-size: 20px;
+      font-weight: 600;
+      color: #c9a84e;
+    }
+  }
+}
+
+.tips {
+  background-color: #181c22;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #aaa;
+  font-style: italic;
+  border-left: 3px solid #c9a84e;
+  line-height: 1.6;
+}
+
+.start-wrapper {
+  .start-button {
+    width: 100%;
+    padding: 14px;
+    background: #0f1318;
+    border: 2px solid #c9a84e;
+    color: #c9a84e;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 12px;
+    transition: all 0.3s;
+
+    &:hover {
+      background-color: #1a1f25;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+    }
+  }
+}
+
+.category-selector {
+  display: flex;
+  gap: 10px;
+
+  button {
+    padding: 10px 16px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid #555;
+    background: #181c22;
+    color: #ccc;
+    font-weight: 600;
+
+    &.selected {
+      background: #222;
+      color: #c9a84e;
+      border-color: #c9a84e;
+      box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+    }
+  }
+}
