@@ -1,0 +1,715 @@
+.store-page {
+  position: relative;
+  min-height: 100vh;
+  background: #1a1a1a;
+  padding-bottom: 80px;
+}
+
+.background-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: linear-gradient(180deg, #2a2a2a 0%, transparent 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.store-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  z-index: 10;
+
+  .back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+  }
+
+  .bullet-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+
+    .bullet-icon {
+      font-size: 20px;
+    }
+
+    .bullet-count {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffd700;
+    }
+  }
+
+  .header-spacer {
+    width: 44px;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: white;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #ff8c00;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+.error-message {
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px;
+  text-align: center;
+  color: #ff3b30;
+
+  .retry-btn {
+    margin-top: 15px;
+    padding: 12px 24px;
+    background: #ff8c00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+.store-content {
+  position: relative;
+  padding: 20px;
+  z-index: 1;
+  height: calc(100% - 100px);
+  overflow-y: auto;
+}
+
+.premium-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.2) 0%,
+    rgba(255, 140, 0, 0.1) 100%
+  );
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+
+  .banner-icon {
+    flex-shrink: 0;
+  }
+
+  .banner-text {
+    flex: 1;
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 4px 0;
+    }
+
+    p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      margin: 0;
+    }
+  }
+}
+
+.subscription-details-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 20px 0;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .detail-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+    }
+  }
+
+  .manage-btn {
+    width: 100%;
+    padding: 14px;
+    background: rgba(255, 140, 0, 0.2);
+    border: 1px solid rgba(255, 140, 0, 0.5);
+    border-radius: 12px;
+    color: #ff8c00;
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:active {
+      background: rgba(255, 140, 0, 0.3);
+    }
+  }
+}
+
+.upgrade-section {
+  .hero-section {
+    text-align: center;
+    padding: 30px 20px;
+
+    .hero-icon {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .hero-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 8px 0;
+    }
+
+    .hero-subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.7);
+      margin: 0;
+    }
+  }
+
+  .features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 30px;
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+
+      .feature-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(76, 217, 100, 0.2);
+        border: 2px solid rgba(76, 217, 100, 0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 700;
+        color: #4cd964;
+        flex-shrink: 0;
+      }
+
+      .feature-text {
+        flex: 1;
+
+        .feature-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: white;
+          margin-bottom: 4px;
+        }
+
+        .feature-description {
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.6);
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+
+  .upgrade-btn {
+    width: 100%;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-icon {
+      flex-shrink: 0;
+    }
+  }
+
+  .pricing-info {
+    text-align: center;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 16px 0 0 0;
+  }
+}
+
+.customer-center-section {
+  text-align: center;
+  padding: 20px 0;
+  margin: 20px 0;
+
+  .section-description {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 16px 0;
+  }
+
+  .secondary-btn {
+    padding: 14px 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+.restore-section {
+  text-align: center;
+  margin: 40px 0;
+
+  .restore-btn {
+    padding: 14px 32px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:active:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .restore-hint {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    margin: 12px 0 0 0;
+  }
+}
+
+.info-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 30px 0;
+
+  .info-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+
+    .info-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .info-text {
+      flex: 1;
+
+      h4 {
+        font-size: 15px;
+        font-weight: 600;
+        color: white;
+        margin: 0 0 4px 0;
+      }
+
+      p {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.6);
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+.test-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255, 204, 0, 0.1);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 30px;
+
+  .notice-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .notice-text {
+    flex: 1;
+
+    strong {
+      display: block;
+      color: #ffcc00;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+      margin: 0;
+      line-height: 1.4;
+    }
+  }
+}
+
+// Purchase options section
+.purchase-options-section {
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+
+  .hero-section {
+    text-align: center;
+    margin-bottom: 32px;
+
+    .hero-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .hero-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 8px 0;
+    }
+
+    .hero-subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.7);
+      margin: 0;
+    }
+  }
+
+  .plans-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .plan-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      border: 2px solid #f6ba16;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+
+      &.featured {
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.2) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+        border: 2px solid #f6ba16;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+      }
+
+      &.purchase-card {
+        cursor: default;
+      }
+
+      .plan-badge {
+        position: absolute;
+        top: -10px;
+        right: 20px;
+        background: #2aff78;
+        color: black;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      .plan-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+      }
+
+      .plan-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 8px 0;
+      }
+
+      .plan-price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2aff78;
+        margin-bottom: 16px;
+      }
+
+      .plan-features {
+        margin-bottom: 20px;
+
+        .feature {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.8);
+          padding: 6px 0;
+          display: flex;
+          align-items: center;
+
+          &.bonus-feature {
+            color: #ffd700;
+            font-weight: 600;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+          }
+
+          &::before {
+            content: "";
+            width: 4px;
+            height: 4px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-right: 8px;
+          }
+        }
+      }
+
+      .bullets-input-container {
+        margin-bottom: 16px;
+
+        label {
+          display: block;
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.8);
+          margin-bottom: 8px;
+        }
+
+        input {
+          width: 100%;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 8px;
+          padding: 12px;
+          font-size: 16px;
+          color: white;
+          font-weight: 600;
+          text-align: center;
+
+          &:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.15);
+          }
+
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+          }
+        }
+
+        .total-price {
+          margin-top: 12px;
+          padding: 12px;
+          background: rgba(76, 175, 80, 0.1);
+          border-radius: 8px;
+          border: 1px solid rgba(76, 175, 80, 0.3);
+
+          .price-line {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 4px;
+          }
+
+          .bonus-line {
+            font-size: 14px;
+            color: #ffd700;
+            margin-bottom: 8px;
+            font-weight: 500;
+          }
+
+          .total-line {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4caf50;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+          }
+        }
+      }
+
+      .plan-btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #f6ba16;
+        color: #1a1a1a;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.15);
+        }
+
+        &.primary {
+          background: #f6ba16;
+          color: #1a1a1a;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+          &:hover {
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+          }
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Mobile responsive
+@media (max-width: 480px) {
+  .purchase-options-section {
+    .plans-container {
+      .plan-card {
+        padding: 20px;
+
+        .plan-icon {
+          font-size: 32px;
+        }
+
+        .plan-name {
+          font-size: 18px;
+        }
+
+        .plan-price {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+}

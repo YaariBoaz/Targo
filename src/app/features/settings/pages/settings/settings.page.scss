@@ -1,0 +1,202 @@
+@use '../../../../../theme/mixins.scss' as *;
+
+.settings-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #000000;
+  color: var(--brand-white);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+// Header
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-md);
+  padding-top: calc(var(--safe-area-top) + var(--spacing-lg));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--brand-white);
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--brand-white);
+  font-size: 1.5rem;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:active {
+    opacity: 0.6;
+  }
+
+  ion-icon {
+    font-size: 28px;
+  }
+}
+
+// Content
+.modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  padding-bottom: calc(var(--safe-area-bottom) + var(--spacing-xl));
+}
+
+// Upgrade Banner
+.upgrade-banner {
+  position: relative;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-xl);
+  cursor: pointer;
+  border: 1px solid rgba(0, 255, 102, 0.3);
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.best-offer-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, #00ff66 0%, #00cc52 100%);
+  color: #000000;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 8px 24px;
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+  z-index: 4;
+  letter-spacing: 0.05em;
+}
+
+.banner-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
+  z-index: 2;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 3;
+  padding: var(--spacing-lg);
+  padding-top: calc(var(--spacing-lg) + 24px); // Account for best offer tag
+}
+
+.banner-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-white);
+  margin: 0 0 var(--spacing-xs) 0;
+  letter-spacing: 0.05em;
+}
+
+.banner-subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.upgrade-btn {
+  position: absolute;
+  bottom: var(--spacing-lg);
+  left: var(--spacing-lg);
+  right: var(--spacing-lg);
+  z-index: 3;
+  background: #00ff66;
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active {
+    background: #00cc52;
+    transform: scale(0.98);
+  }
+}
+
+// Menu Items
+.menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.menu-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(0.98);
+  }
+}
+
+.menu-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #FFD700; // Gold color matching the design
+}
+
+.menu-arrow {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.5);
+}

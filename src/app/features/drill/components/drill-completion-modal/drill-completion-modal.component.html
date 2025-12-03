@@ -1,0 +1,51 @@
+<div class="modal-overlay" *ngIf="nextDrillInfo">
+  <div class="modal-content">
+    <!-- Close Button -->
+    <button class="close-button" (click)="onClose()">
+      <ion-icon name="close"></ion-icon>
+    </button>
+
+    <!-- Feedback Title -->
+    <h1 class="feedback-title">{{ feedbackTitle }}</h1>
+
+    <!-- Subtitle -->
+    <p class="subtitle">{{ subtitle }}</p>
+
+    <!-- Performance Message -->
+    <p class="message" *ngIf="stats.stars === 3">Perfect execution!</p>
+    <p class="message" *ngIf="stats.stars === 2">Good accuracy!</p>
+    <p class="message" *ngIf="stats.stars === 1">You can do better!</p>
+    <p class="message" *ngIf="!stats.stars || stats.stars === 0">Let's tighten that group!</p>
+
+    <!-- Countdown -->
+    <div class="countdown">{{ countdown }}</div>
+    <p class="countdown-label">Coming up next...</p>
+
+    <!-- Next Drill Preview -->
+    <div class="next-drill-preview">
+      <div class="preview-bg">
+        <img src="/assets/bg/challenges/ch1.png" alt="Drill" />
+      </div>
+
+      <h3 class="next-drill-title" *ngIf="isChallenge && nextDrillInfo.title">
+        {{ nextDrillInfo.title }}
+      </h3>
+      <h3 class="next-drill-title" *ngIf="!isChallenge">
+        Drill Master
+      </h3>
+
+      <p class="next-drill-info">
+        The next drill will be: <strong>{{ nextDrillInfo.bullets }} bullets</strong> from
+        <strong>{{ nextDrillInfo.distance }}m</strong> with a <strong>{{ nextDrillInfo.weapon }}</strong>
+      </p>
+    </div>
+
+    <!-- Start Button -->
+    <button class="start-button" (click)="onStartNext()">START NOW</button>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar" [style.width.%]="progress"></div>
+    </div>
+  </div>
+</div>

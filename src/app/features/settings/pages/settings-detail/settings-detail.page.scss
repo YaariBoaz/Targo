@@ -1,0 +1,208 @@
+@use '../../../../../theme/mixins.scss' as *;
+
+.settings-detail-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #000000;
+  color: var(--brand-white);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+// Header
+.page-header {
+  padding: var(--spacing-lg) var(--spacing-md);
+  padding-top: calc(var(--safe-area-top) + var(--spacing-md));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--brand-white);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0;
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:active {
+    opacity: 0.6;
+  }
+
+  ion-icon {
+    font-size: 20px;
+  }
+
+  span {
+    letter-spacing: 0.05em;
+  }
+}
+
+.page-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--brand-white);
+  margin: 0;
+  text-align: center;
+}
+
+// Content
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg) var(--spacing-md);
+  padding-bottom: calc(var(--safe-area-bottom) + var(--spacing-xl) + 60px); // Extra space for save button
+}
+
+// Form Section
+.form-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.form-group {
+  margin-bottom: var(--spacing-lg);
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+  }
+
+  input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 1rem;
+    color: var(--brand-white);
+    font-family: inherit;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    &[readonly] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Weapon Settings Section
+.weapon-settings-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #FFD700; // Gold color
+  margin: 0 0 var(--spacing-lg) 0;
+  letter-spacing: 0.05em;
+  text-transform: capitalize;
+}
+
+.section-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #FFD700; // Gold color
+  margin-bottom: var(--spacing-sm);
+  text-transform: capitalize;
+}
+
+.weapon-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  color: var(--brand-white);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  option {
+    background: #1a1a1a;
+    color: var(--brand-white);
+  }
+}
+
+.distance-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  color: var(--brand-white);
+  font-family: inherit;
+  text-align: left;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+// Save Button
+.save-btn {
+  position: fixed;
+  bottom: calc(var(--safe-area-bottom) + var(--spacing-lg));
+  left: var(--spacing-md);
+  right: var(--spacing-md);
+  background: #FFD700;
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active:not(:disabled) {
+    background: #E5C100;
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.success {
+    background: #00ff66;
+  }
+}

@@ -1,0 +1,25 @@
+<div class="challenge-card">
+  <!-- Challenge Image -->
+  <div class="challenge-image">
+    <img [src]="challenge.imageUrl" [alt]="challenge.title" />
+    <div class="image-overlay"></div>
+  </div>
+
+  <!-- Challenge Info -->
+  <div class="challenge-info">
+    <h3 class="challenge-title">{{ challenge.title }}</h3>
+    <p class="challenge-progress">
+      {{ challenge.progress.label }}:
+      <span class="progress-value">{{ challenge.progress.current }} / {{ challenge.progress.total }}</span>
+    </p>
+  </div>
+
+  <!-- Action Button -->
+  <ion-button
+    expand="block"
+    class="btn-start"
+    (click)="onStartClick()"
+  >
+    LET'S GO
+  </ion-button>
+</div>

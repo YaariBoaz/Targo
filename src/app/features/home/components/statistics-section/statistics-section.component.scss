@@ -1,0 +1,153 @@
+@use '../../../../../theme/mixins.scss' as *;
+
+.statistics-section {
+  margin-bottom: 0;
+}
+
+// Section Header
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--brand-white);
+  margin: 0;
+  text-transform: uppercase;
+  position: relative;
+  padding-left: 12px;
+
+  // Gold vertical bar
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: var(--brand-gold);
+  }
+}
+
+.see-more-btn {
+  background: transparent;
+  border: none;
+  color: var(--brand-gold);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+// Horizontal Scroll
+.statistics-scroll {
+  display: flex;
+  gap: var(--spacing-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: var(--spacing-sm);
+
+  // Hide scrollbar but keep functionality
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(246, 186, 22, 0.3);
+    border-radius: 2px;
+
+    &:hover {
+      background: rgba(246, 186, 22, 0.5);
+    }
+  }
+}
+
+// Stat Card
+.stat-card {
+  min-width: 220px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: var(--spacing-md);
+}
+
+.card-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+// Targo Score Display
+.score-display {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: var(--spacing-md);
+}
+
+.score-value {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--brand-gold);
+  line-height: 1;
+}
+
+.score-max {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 4px;
+}
+
+// Score Metrics
+.score-metrics {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.metric {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--brand-gold);
+}
+
+// Chart Container
+.chart-container {
+  height: 120px;
+  position: relative;
+}

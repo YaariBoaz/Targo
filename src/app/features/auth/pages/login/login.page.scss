@@ -1,0 +1,265 @@
+@use '../../../../../theme/mixins.scss' as *;
+
+.login-content {
+  --background: transparent;
+  position: relative;
+}
+
+.background-image {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--safe-area-bottom);
+  background: url('/assets/bg/soldiers.png') center center / cover no-repeat;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.background-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--safe-area-bottom);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.login-container {
+  position: relative;
+  z-index: 3;
+  @include flex-column;
+  min-height: calc(100vh - var(--safe-area-bottom));
+  padding-top: calc(var(--spacing-lg) + var(--safe-area-top));
+  padding-left: calc(var(--spacing-lg) + var(--safe-area-left));
+  padding-right: calc(var(--spacing-lg) + var(--safe-area-right));
+  padding-bottom: calc(var(--spacing-xl) + var(--safe-area-bottom));
+}
+
+// Back Button
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--brand-white);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 0;
+  margin-bottom: var(--spacing-md);
+  cursor: pointer;
+  align-self: flex-start;
+
+  ion-icon {
+    font-size: 1.25rem;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+// Logo Section
+.logo-section {
+  @include flex-center;
+  @include flex-column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.crosshair-icon {
+  width: 60px;
+  height: 60px;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+  }
+}
+
+.targo-text {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--brand-gold);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+// Form Section
+.form-section {
+  flex: 1;
+  width: 100%;
+  @include flex-column;
+  padding: 0 15px;
+}
+
+.form-title {
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--brand-white);
+  margin: 0 0 var(--spacing-lg) 0;
+  text-transform: uppercase;
+}
+
+// Input Groups
+.input-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.input-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+}
+
+.input-field {
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 0 var(--spacing-md);
+  color: var(--brand-white);
+  font-size: 1rem;
+  font-family: 'Lexend', sans-serif;
+
+  &:focus {
+    outline: none;
+    border-color: var(--brand-gold);
+  }
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+// Password Wrapper
+.password-wrapper {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  @include flex-center;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 1.25rem;
+  }
+
+  &:active {
+    color: var(--brand-gold);
+  }
+}
+
+// Login Button
+.btn-login {
+  --border-radius: 4px;
+  --box-shadow: none;
+  height: 50px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+
+  // Enabled state
+  &:not([disabled]) {
+    --background: #f6ba16;
+    --background-hover: #f5a623;
+    --background-activated: #d8911f;
+    --color: #000000;
+  }
+
+  // Disabled state (gray)
+  &[disabled] {
+    --background: rgba(255, 255, 255, 0.2);
+    --color: rgba(255, 255, 255, 0.4);
+    opacity: 1;
+  }
+}
+
+// Forgot Password
+.forgot-password {
+  display: block;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--brand-gold);
+  text-decoration: underline;
+  margin-bottom: var(--spacing-lg);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+// Register Link
+.register-link {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--brand-white);
+  margin: 0 0 var(--spacing-lg) 0;
+  letter-spacing: 0.05em;
+
+  a {
+    color: var(--brand-gold);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 4px;
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+}
+
+// Guest Button
+.btn-guest {
+  --border-color: var(--brand-gold);
+  --border-width: 2px;
+  --color: var(--brand-gold);
+  --background: transparent;
+  --background-hover: rgba(245, 166, 35, 0.1);
+  --background-activated: rgba(245, 166, 35, 0.2);
+  --border-radius: 4px;
+  --box-shadow: none;
+  height: 50px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: auto;
+}
+
+.guest-subtitle {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: var(--spacing-xs) 0 0 0;
+  font-style: italic;
+}

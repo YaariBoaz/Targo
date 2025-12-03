@@ -1,0 +1,476 @@
+[
+  {
+    "id": "sgt-michael-smith-memorial",
+    "type": "heroes",
+    "title": "Sgt. Michael Smith Memorial",
+    "description": "Honor and remember through excellence",
+    "imageUrl": "/assets/bg/challenges/ch1.png",
+    "difficulty": "hard",
+    "category": "memorial",
+    "drillsCount": 5,
+    "isActive": true,
+    "heroMetadata": {
+      "heroName": "Michael James Smith",
+      "rank": "Sergeant",
+      "branch": "U.S. Army",
+      "dateOfBirth": "1985-04-12",
+      "dateOfService": "2003-2023",
+      "story": "Sgt. Michael James Smith served with honor and distinction in the U.S. Army for 20 years. Known for his exceptional marksmanship and leadership, he trained countless soldiers in precision shooting and tactical operations. His dedication to excellence and unwavering commitment to his fellow soldiers made him a respected leader and mentor. Michael's legacy lives on through every shooter who strives for perfection and honors the principles he embodied: discipline, precision, and service above self.",
+      "quote": "Excellence is not a destination, it's a way of life. Every shot counts, every moment matters.",
+      "mediaType": "video",
+      "mediaUrl": "/assets/heroes/smith-memorial.mp4",
+      "thumbnailUrl": "/assets/heroes/smith-thumbnail.jpg",
+      "awards": [
+        "Purple Heart",
+        "Bronze Star Medal",
+        "Army Commendation Medal",
+        "Combat Action Badge",
+        "Expert Marksmanship Badge"
+      ]
+    },
+    "completionBadge": {
+      "title": "In Honor of Sgt. Smith",
+      "description": "Completed the Sgt. Michael Smith Memorial Challenge",
+      "imageUrl": "/assets/badges/smith-memorial.png",
+      "rarity": "legendary"
+    },
+    "drills": [
+      {
+        "order": 1,
+        "title": "Foundation of Excellence",
+        "description": "Master the fundamentals as Sgt. Smith taught",
+        "imageUrl": "/assets/bg/challenges/ch1.png",
+        "requirements": {
+          "numberOfBullets": 10,
+          "distance": 25,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 30,
+          "maxAcceptableDistance": 30,
+          "maxAcceptableGrouping": 22,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Honor through precision fundamentals",
+          "focusArea": "Marksmanship Basics"
+        }
+      },
+      {
+        "order": 2,
+        "title": "Discipline Under Fire",
+        "description": "Maintain composure and accuracy under pressure",
+        "imageUrl": "/assets/bg/challenges/ch2.png",
+        "requirements": {
+          "numberOfBullets": 12,
+          "distance": 30,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 28,
+          "maxAcceptableDistance": 32,
+          "maxAcceptableGrouping": 24,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Maintain discipline under stress",
+          "focusArea": "Mental Toughness"
+        }
+      },
+      {
+        "order": 3,
+        "title": "Leadership Through Action",
+        "description": "Lead by example with consistent performance",
+        "imageUrl": "/assets/bg/challenges/ch3.png",
+        "requirements": {
+          "numberOfBullets": 15,
+          "distance": 35,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 35,
+          "maxAcceptableDistance": 35,
+          "maxAcceptableGrouping": 26,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Lead through consistent excellence",
+          "focusArea": "Consistency & Leadership"
+        }
+      },
+      {
+        "order": 4,
+        "title": "Service Above Self",
+        "description": "Demonstrate selfless precision and dedication",
+        "imageUrl": "/assets/bg/challenges/ch1.png",
+        "requirements": {
+          "numberOfBullets": 18,
+          "distance": 40,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 40,
+          "maxAcceptableDistance": 38,
+          "maxAcceptableGrouping": 28,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Serve with dedication and precision",
+          "focusArea": "Advanced Marksmanship"
+        }
+      },
+      {
+        "order": 5,
+        "title": "Legacy of Honor",
+        "description": "Ultimate test honoring Sgt. Smith's legacy",
+        "imageUrl": "/assets/bg/challenges/ch4.png",
+        "requirements": {
+          "numberOfBullets": 20,
+          "distance": 50,
+          "targetType": "standard",
+          "weaponCategory": "rifle"
+        },
+        "scoringCriteria": {
+          "perfectTime": 45,
+          "maxAcceptableDistance": 40,
+          "maxAcceptableGrouping": 30,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Honor his legacy through mastery",
+          "focusArea": "Complete Excellence"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lt-sarah-johnson-tribute",
+    "type": "heroes",
+    "title": "Lt. Sarah Johnson Tribute",
+    "description": "Courage and precision in every shot",
+    "imageUrl": "/assets/bg/challenges/ch2.png",
+    "difficulty": "medium",
+    "category": "memorial",
+    "drillsCount": 5,
+    "isActive": true,
+    "heroMetadata": {
+      "heroName": "Sarah Elizabeth Johnson",
+      "rank": "Lieutenant",
+      "branch": "U.S. Marines",
+      "dateOfBirth": "1990-08-22",
+      "dateOfService": "2012-2022",
+      "story": "Lt. Sarah Elizabeth Johnson was a trailblazer in the Marine Corps, breaking barriers and setting new standards for excellence. As one of the first female infantry officers, she proved that courage, skill, and determination know no gender. Her exceptional marksmanship and tactical acumen earned her the respect of all who served alongside her. Sarah's legacy inspires a new generation to pursue excellence without limits, demonstrating that true strength comes from within.",
+      "quote": "Courage is not the absence of fear, but the triumph over it. Precision is not luck, it's preparation meeting opportunity.",
+      "mediaType": "video",
+      "mediaUrl": "/assets/heroes/johnson-memorial.mp4",
+      "thumbnailUrl": "/assets/heroes/johnson-thumbnail.jpg",
+      "awards": [
+        "Navy Cross",
+        "Purple Heart",
+        "Navy and Marine Corps Achievement Medal",
+        "Combat Action Ribbon",
+        "Expert Rifle Badge"
+      ]
+    },
+    "completionBadge": {
+      "title": "In Honor of Lt. Johnson",
+      "description": "Completed the Lt. Sarah Johnson Tribute Challenge",
+      "imageUrl": "/assets/badges/johnson-tribute.png",
+      "rarity": "legendary"
+    },
+    "drills": [
+      {
+        "order": 1,
+        "title": "Breaking Barriers",
+        "description": "Prove your worth through skill and determination",
+        "imageUrl": "/assets/bg/challenges/ch2.png",
+        "requirements": {
+          "numberOfBullets": 10,
+          "distance": 20,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 25,
+          "maxAcceptableDistance": 28,
+          "maxAcceptableGrouping": 20,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Prove your capabilities",
+          "focusArea": "Determination & Skill"
+        }
+      },
+      {
+        "order": 2,
+        "title": "Leading from the Front",
+        "description": "Set the standard through personal excellence",
+        "imageUrl": "/assets/bg/challenges/ch3.png",
+        "requirements": {
+          "numberOfBullets": 12,
+          "distance": 25,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 28,
+          "maxAcceptableDistance": 30,
+          "maxAcceptableGrouping": 22,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Lead through example",
+          "focusArea": "Leadership Excellence"
+        }
+      },
+      {
+        "order": 3,
+        "title": "Tactical Precision",
+        "description": "Demonstrate tactical mastery and precision",
+        "imageUrl": "/assets/bg/challenges/ch1.png",
+        "requirements": {
+          "numberOfBullets": 15,
+          "distance": 30,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 32,
+          "maxAcceptableDistance": 32,
+          "maxAcceptableGrouping": 24,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Master tactical shooting",
+          "focusArea": "Tactical Expertise"
+        }
+      },
+      {
+        "order": 4,
+        "title": "Unwavering Courage",
+        "description": "Perform with courage under any circumstances",
+        "imageUrl": "/assets/bg/challenges/ch2.png",
+        "requirements": {
+          "numberOfBullets": 12,
+          "distance": 35,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 30,
+          "maxAcceptableDistance": 34,
+          "maxAcceptableGrouping": 25,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Display unwavering courage",
+          "focusArea": "Mental Strength"
+        }
+      },
+      {
+        "order": 5,
+        "title": "Johnson's Legacy",
+        "description": "Honor her memory through excellence",
+        "imageUrl": "/assets/bg/challenges/ch4.png",
+        "requirements": {
+          "numberOfBullets": 18,
+          "distance": 40,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 38,
+          "maxAcceptableDistance": 36,
+          "maxAcceptableGrouping": 27,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Continue her legacy of excellence",
+          "focusArea": "Complete Mastery"
+        }
+      }
+    ]
+  },
+  {
+    "id": "cpl-david-martinez-legacy",
+    "type": "heroes",
+    "title": "Cpl. David Martinez Legacy",
+    "description": "Never forgotten, always honored",
+    "imageUrl": "/assets/bg/challenges/ch3.png",
+    "difficulty": "hard",
+    "category": "memorial",
+    "drillsCount": 5,
+    "isActive": true,
+    "heroMetadata": {
+      "heroName": "David Antonio Martinez",
+      "rank": "Corporal",
+      "branch": "NYPD",
+      "dateOfBirth": "1988-11-15",
+      "dateOfService": "2010-2021",
+      "story": "Cpl. David Antonio Martinez served the NYPD with unwavering dedication and courage. As a member of the Emergency Service Unit, he faced the most dangerous situations with calm professionalism and exceptional skill. Known for his precise shooting and quick decision-making, David saved countless lives throughout his career. His commitment to protecting others and his community made him a hero both in uniform and in the hearts of those he served. David's legacy reminds us that true heroism is found in everyday service and sacrifice.",
+      "quote": "Service is not about the glory, it's about showing up every day ready to make a difference.",
+      "mediaType": "video",
+      "mediaUrl": "/assets/heroes/martinez-memorial.mp4",
+      "thumbnailUrl": "/assets/heroes/martinez-thumbnail.jpg",
+      "awards": [
+        "Medal of Valor",
+        "Combat Cross",
+        "Meritorious Police Duty Medal",
+        "Distinguished Marksman Award",
+        "Lifesaving Medal (3x)"
+      ]
+    },
+    "completionBadge": {
+      "title": "In Honor of Cpl. Martinez",
+      "description": "Completed the Cpl. David Martinez Legacy Challenge",
+      "imageUrl": "/assets/badges/martinez-legacy.png",
+      "rarity": "legendary"
+    },
+    "drills": [
+      {
+        "order": 1,
+        "title": "First Responder",
+        "description": "Quick response with precision accuracy",
+        "imageUrl": "/assets/bg/challenges/ch3.png",
+        "requirements": {
+          "numberOfBullets": 10,
+          "distance": 15,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 18,
+          "maxAcceptableDistance": 25,
+          "maxAcceptableGrouping": 18,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Rapid response with accuracy",
+          "focusArea": "Quick Reaction"
+        }
+      },
+      {
+        "order": 2,
+        "title": "Urban Defender",
+        "description": "Protect and serve with precision",
+        "imageUrl": "/assets/bg/challenges/ch1.png",
+        "requirements": {
+          "numberOfBullets": 12,
+          "distance": 20,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 22,
+          "maxAcceptableDistance": 28,
+          "maxAcceptableGrouping": 20,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Urban environment precision",
+          "focusArea": "Urban Tactics"
+        }
+      },
+      {
+        "order": 3,
+        "title": "Crisis Management",
+        "description": "Maintain control under extreme pressure",
+        "imageUrl": "/assets/bg/challenges/ch2.png",
+        "requirements": {
+          "numberOfBullets": 15,
+          "distance": 18,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 20,
+          "maxAcceptableDistance": 26,
+          "maxAcceptableGrouping": 19,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Control under pressure",
+          "focusArea": "Crisis Response"
+        }
+      },
+      {
+        "order": 4,
+        "title": "Guardian's Duty",
+        "description": "Protect with unwavering precision",
+        "imageUrl": "/assets/bg/challenges/ch3.png",
+        "requirements": {
+          "numberOfBullets": 18,
+          "distance": 25,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 30,
+          "maxAcceptableDistance": 30,
+          "maxAcceptableGrouping": 22,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Unwavering protection",
+          "focusArea": "Protective Service"
+        }
+      },
+      {
+        "order": 5,
+        "title": "Martinez's Promise",
+        "description": "Honor his commitment to service",
+        "imageUrl": "/assets/bg/challenges/ch4.png",
+        "requirements": {
+          "numberOfBullets": 20,
+          "distance": 30,
+          "targetType": "standard",
+          "weaponCategory": "pistol"
+        },
+        "scoringCriteria": {
+          "perfectTime": 35,
+          "maxAcceptableDistance": 32,
+          "maxAcceptableGrouping": 24,
+          "threeStars": 900,
+          "twoStars": 750,
+          "oneStar": 600
+        },
+        "challengeInfo": {
+          "objective": "Honor through service excellence",
+          "focusArea": "Complete Dedication"
+        }
+      }
+    ]
+  }
+]

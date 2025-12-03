@@ -1,0 +1,148 @@
+<div class="register-page">
+  <!-- Background Image -->
+  <div class="background-image"></div>
+  <div class="background-overlay"></div>
+
+  <!-- Fixed Header Section -->
+  <div class="register-header">
+    <!-- Back Button -->
+    <button class="back-button" (click)="goBack()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+      <span>BACK</span>
+    </button>
+
+    <!-- Page Title -->
+    <h2 class="page-title">BUILD YOUR SHOOTER PROFILE</h2>
+  </div>
+
+  <!-- Scrollable Container -->
+  <div class="register-scroll-container">
+    <!-- Profile Photo Upload -->
+    <div class="photo-upload-section">
+      <button class="photo-upload" (click)="uploadPhoto()" type="button">
+        @if (profilePhoto) {
+          <img [src]="profilePhoto" alt="Profile" class="uploaded-photo" />
+        } @else {
+          <!-- Crosshair Icon (Empty State) -->
+          <svg class="crosshair-placeholder" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- Dashed Circle -->
+            <circle
+              cx="60"
+              cy="60"
+              r="55"
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.4)"
+              stroke-width="2"
+              stroke-dasharray="8 8"
+            />
+            <!-- Crosshair Lines -->
+            <line x1="60" y1="20" x2="60" y2="40" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2" />
+            <line x1="60" y1="80" x2="60" y2="100" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2" />
+            <line x1="20" y1="60" x2="40" y2="60" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2" />
+            <line x1="80" y1="60" x2="100" y2="60" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2" />
+          </svg>
+        }
+      </button>
+      <p class="upload-label">UPLOAD PHOTO</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="registerForm" class="register-form">
+      <!-- Nickname -->
+      <div class="input-group">
+        <label class="input-label">NICKNAME</label>
+        <input
+          type="text"
+          class="input-field"
+          formControlName="nickname"
+          placeholder="The_Punisher"
+        />
+      </div>
+
+      <!-- Email -->
+      <div class="input-group">
+        <label class="input-label">EMAIL</label>
+        <input
+          type="email"
+          class="input-field"
+          formControlName="email"
+          placeholder="john.m@gmail.com"
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="input-group">
+        <label class="input-label">PASSWORD</label>
+        <div class="password-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            class="input-field"
+            formControlName="password"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="togglePassword()"
+          >
+            <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Location (Optional) -->
+      <div class="input-group">
+        <label class="input-label">
+          Location
+          <span class="optional-label">(Optional)</span>
+        </label>
+        <input
+          type="text"
+          class="input-field"
+          formControlName="location"
+          placeholder="Good if you want to enter location based competitions"
+        />
+      </div>
+
+      <!-- Shooter Level Selection -->
+      <div class="level-section">
+        <label class="input-label">SHOOTER LEVEL</label>
+        <div class="level-buttons">
+          <button
+            type="button"
+            class="level-btn"
+            [class.selected]="selectedLevel === 'recruit'"
+            (click)="selectLevel('recruit')"
+          >
+            RECRUIT
+          </button>
+          <button
+            type="button"
+            class="level-btn"
+            [class.selected]="selectedLevel === 'marksman'"
+            (click)="selectLevel('marksman')"
+          >
+            MARKSMAN
+          </button>
+          <button
+            type="button"
+            class="level-btn"
+            [class.selected]="selectedLevel === 'pro'"
+            (click)="selectLevel('pro')"
+          >
+            PRO
+          </button>
+        </div>
+      </div>
+
+      <!-- Register Button -->
+      <ion-button
+        expand="block"
+        class="btn-register"
+        [disabled]="!registerForm.valid"
+        (click)="onRegister()"
+      >
+        REGISTER
+      </ion-button>
+    </form>
+  </div>
+</div>

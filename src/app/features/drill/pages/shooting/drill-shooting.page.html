@@ -1,0 +1,77 @@
+<div class="shooting-page">
+  <!-- Top Stats Bar -->
+  <div class="top-bar">
+    <div class="stat">
+      <span class="stat-label">SHOTS:</span>
+      <span class="stat-value shots">{{ shots.length }}/{{ totalShots }}</span>
+    </div>
+
+    <button class="exit-btn" (click)="exitDrill()">EXIT</button>
+  </div>
+
+  <div class="side-stats">
+    <div class="stat">
+      <span class="stat-label">TOTAL TIME:</span>
+      <span class="stat-value">{{ formattedTime }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="stat-label">GROUPING:</span>
+      <span class="stat-value">{{ grouping }}cm</span>
+    </div>
+  </div>
+
+  <!-- Target -->
+  <div class="target-container">
+    <div class="target">
+      <div class="target-hitbox"></div>
+      <!-- Shot markers -->
+      @for (shot of shots; track shot.id) {
+        <div class="shot-marker" [style.left.px]="shot.x" [style.top.px]="shot.y">
+          {{ shot.id }}
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Stats Table (Bottom Sheet) -->
+  <div class="stats-sheet" [class.expanded]="isStatsExpanded">
+    <div class="sheet-handle" (click)="toggleStats()">
+      <svg class="handle-arrow" [class.flipped]="isStatsExpanded" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M18 15L12 9L6 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3 class="sheet-title">Shooting session statistics</h3>
+    </div>
+
+    <div class="sheet-content">
+      <div class="stats-header">
+        <div class="header-cell">SHOTS</div>
+        <div class="header-cell">AVG. SPLIT</div>
+        <div class="header-cell">AVG. DIST</div>
+        <div class="header-cell">TOTAL TIME</div>
+      </div>
+
+      <div class="stats-rows">
+        @for (stat of sessionStats; track $index) {
+          <div class="stats-row">
+            <div class="stat-cell">{{ stat.shotNumber }}</div>
+            <div class="stat-cell">{{ stat.avgSplitTime.toFixed(2) }}s</div>
+            <div class="stat-cell">{{ stat.avgDistance.toFixed(1) }}cm</div>
+            <div class="stat-cell">{{ formatTime(stat.totalTime) }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion Modal -->
+  <app-drill-completion-modal
+    *ngIf="showCompletionModal && completionStats && drillSetup"
+    [isChallenge]="drillSetup.source === 'challenge'"
+    [stats]="completionStats"
+    [challengeId]="drillSetup.challengeId"
+    [currentDrillOrder]="getCurrentDrillOrder()"
+    (close)="onModalClose()"
+    (startNext)="onStartNextDrill()"
+  ></app-drill-completion-modal>
+</div>

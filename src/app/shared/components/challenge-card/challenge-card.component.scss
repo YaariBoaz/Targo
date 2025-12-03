@@ -1,0 +1,83 @@
+@use "../../../../theme/mixins.scss" as *;
+
+.challenge-card {
+  width: 160px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+// Challenge Image
+.challenge-image {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.5) 100%
+    );
+  }
+}
+
+// Challenge Info
+.challenge-info {
+  padding: var(--spacing-sm);
+  text-align: center;
+}
+
+.challenge-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--brand-white);
+  margin: 0 0 4px 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.challenge-progress {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+
+  .progress-value {
+    color: var(--brand-gold);
+    font-weight: 600;
+  }
+}
+
+// Start Button
+.btn-start {
+  --border-radius: 0;
+  --box-shadow: none;
+  --background: var(--brand-gold);
+  --background-hover: #f5a623;
+  --background-activated: #d8911f;
+  --color: #000000;
+  height: 40px;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0;
+}

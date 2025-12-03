@@ -1,0 +1,30 @@
+<div class="challenges-section">
+  <!-- Section Header -->
+  <div class="section-header">
+    <h2 class="section-title">CHALLENGES</h2>
+    <button class="see-more-btn" (click)="onSeeMore()">SEE MORE</button>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+  <div class="loading-state">
+    <p>Loading challenges...</p>
+  </div>
+  }
+
+  <!-- Horizontal Scroll Container -->
+  @if (!loading) {
+  <div class="challenges-scroll">
+    @if (challenges.length === 0) {
+    <div class="empty-state">
+      <p>No challenges available</p>
+    </div>
+    } @for (challenge of challenges; track challenge.id) {
+    <app-challenge-card
+      [challenge]="challenge"
+      (startChallenge)="onStartChallenge($event)"
+    ></app-challenge-card>
+    }
+  </div>
+  }
+</div>

@@ -1,0 +1,55 @@
+<div class="statistics-section">
+  <!-- Section Header -->
+  <div class="section-header">
+    <h2 class="section-title">STATISTICS</h2>
+    <button class="see-more-btn" (click)="onSeeMore()">SEE MORE</button>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+  <div class="loading-state">
+    <p>Loading statistics...</p>
+  </div>
+  }
+
+  <!-- Horizontal Scroll Container -->
+  @if (!loading) {
+  <div class="statistics-scroll">
+    <!-- Targo Score Card -->
+    <div class="stat-card">
+      <h3 class="card-title">Your Targo Score:</h3>
+      <div class="score-display">
+        <span class="score-value">{{ targoScore }}</span>
+        <span class="score-max">/{{ maxScore }}</span>
+      </div>
+      <div class="score-metrics">
+        <div class="metric">
+          <span class="metric-label">ACCURACY</span>
+          <span class="metric-value">{{ accuracy }}</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">SPEED</span>
+          <span class="metric-value">{{ speed.toFixed(2) }}s</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">CONSISTENCY</span>
+          <span class="metric-value">{{ consistency.toFixed(1) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Shots Card -->
+    <div class="stat-card">
+      <h3 class="card-title">Weekly Shots:</h3>
+      <div class="chart-container">
+        <canvas
+          baseChart
+          [data]="weeklyChartData"
+          [options]="weeklyChartOptions"
+          [type]="'bar'"
+        ></canvas>
+      </div>
+    </div>
+  </div>
+  }
+</div>

@@ -1,0 +1,70 @@
+<div class="challenge-drills-page">
+  <div class="background-gradient"></div>
+
+  <!-- Header -->
+  <div class="drills-header">
+    <button class="back-btn" (click)="goBack()">
+      <ion-icon name="arrow-back"></ion-icon>
+      <span>BACK</span>
+    </button>
+
+    <h1 class="challenge-title">{{ challengeTitle }}</h1>
+    <p class="challenge-subtitle">{{ challengeSubtitle }}</p>
+  </div>
+
+  <!-- Scrollable Drills List -->
+  <div class="drills-scroll-container">
+    <div class="drills-content">
+      <div class="drills-list">
+        @for (drill of drills; track drill.id) {
+          <div class="drill-card"
+               [class.locked]="drill.status === 'locked'"
+               [class.completed]="drill.status === 'completed'"
+               (click)="onDrillClick(drill)">
+            <div class="drill-image">
+              <img [src]="drill.imageUrl" [alt]="drill.title" />
+
+              @if (drill.status === 'locked') {
+                <div class="locked-overlay">
+                  <ion-icon name="lock-closed"></ion-icon>
+                </div>
+              }
+
+              @if (drill.status === 'completed' && drill.stars) {
+                <div class="stars-overlay">
+                  @for (star of [1, 2, 3]; track star) {
+                    <ion-icon
+                      name="{{ star <= drill.stars! ? 'star' : 'star-outline' }}"
+                      [class.filled]="star <= drill.stars!">
+                    </ion-icon>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="drill-details">
+              <h3 class="drill-title">{{ drill.title }}</h3>
+              <p class="drill-description">{{ drill.description }}</p>
+
+              @if (drill.status === 'completed') {
+                <div class="drill-score">Score: <span class="score-value">{{ drill.score }}</span></div>
+              }
+
+              <button class="drill-btn"
+                      [class.locked]="drill.status === 'locked'"
+                      [class.completed]="drill.status === 'completed'">
+                @if (drill.status === 'locked') {
+                  LOCKED
+                } @else if (drill.status === 'completed') {
+                  REPLAY
+                } @else {
+                  LET'S GO
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

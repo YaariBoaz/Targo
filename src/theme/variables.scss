@@ -1,2 +1,58 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
+:root {
+  // Brand Colors - TARGO Gold as Primary
+  --ion-color-primary: #f6ba16;
+  --ion-color-primary-rgb: 245, 166, 35;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #d8911f;
+  --ion-color-primary-tint: #f6af39;
+
+  // TARGO Brand Colors
+  --brand-gold: #f5a623;
+  --brand-gold-light: #f6af39;
+  --brand-gold-dark: #d8911f;
+  --brand-dark: #0a0a0a;
+  --brand-dark-lighter: #1a1a1a;
+  --brand-white: #ffffff;
+
+  // Additional Brand Colors
+  --brand-shooting-red: #e63946;
+  --brand-target-black: #1d3557;
+  --brand-success-green: #06d6a0;
+
+  // Touch Target Sizes (Glove-Friendly)
+  --touch-target-min: 48px;
+  --touch-target-comfortable: 56px;
+  --touch-target-large: 64px;
+
+  // Spacing System (8px base)
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
+  // Border Radius
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  // Z-index System
+  --z-target-display: 10;
+  --z-hit-marker: 20;
+  --z-modal: 1000;
+  --z-toast: 2000;
+}
+
+// Responsive Breakpoints
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;

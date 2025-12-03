@@ -1,0 +1,37 @@
+.countdown-page {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.countdown-number {
+  font-size: 10rem;
+  font-weight: 700;
+  color: #F6BA16;
+  animation: pulse 1s ease-in-out;
+}
+
+.countdown-go {
+  font-size: 10rem;
+  font-weight: 700;
+  color: #00FF6A;
+  animation: pulse 1s ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

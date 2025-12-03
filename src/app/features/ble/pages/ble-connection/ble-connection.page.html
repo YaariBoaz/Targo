@@ -1,0 +1,81 @@
+<ion-content class="ble-content" [fullscreen]="true">
+  <!-- Background -->
+  <div class="background-gradient"></div>
+
+  <!-- Scrollable Content Container -->
+  <div class="ble-scroll-container">
+    <!-- Back Button -->
+    <div class="back-button" (click)="goBack()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+      BACK
+    </div>
+
+    <!-- Title -->
+    <h1 class="page-title">AVAILABLE TARGETS</h1>
+
+    <!-- Device List -->
+    <div class="targets-list">
+      <div *ngFor="let device of devices" class="target-card">
+        <!-- Target Image Placeholder -->
+        <div class="target-image">
+          <img
+            src="/assets/targets/target-card.png"
+            alt="Target"
+            onerror="this.style.display='none'"
+          />
+          <div class="target-placeholder" *ngIf="!hasImage">
+            <ion-icon name="bluetooth-outline"></ion-icon>
+          </div>
+        </div>
+
+        <!-- Target Info -->
+        <div class="target-info">
+          <h2 class="target-name">{{ device.name}}</h2>
+          <p class="target-distance">{{ getDeviceSignalStrength(device) }}</p>
+
+          <!-- Connect Button -->
+          <button
+            class="connect-btn"
+            [class.connecting]="connectingDeviceId === device.deviceId"
+            [disabled]="isConnecting"
+            (click)="connectToDevice(device)"
+          >
+            <ion-spinner
+              *ngIf="connectingDeviceId === device.deviceId"
+              name="crescent"
+            ></ion-spinner>
+            <span *ngIf="connectingDeviceId !== device.deviceId">CONNECT</span>
+            <span *ngIf="connectingDeviceId === device.deviceId"
+              >CONNECTING...</span
+            >
+          </button>
+        </div>
+      </div>
+
+      <!-- No Devices Found -->
+      <div *ngIf="!isScanning && devices.length === 0" class="no-devices">
+        <ion-icon name="bluetooth-outline"></ion-icon>
+        <p>No ADL Monitor targets found</p>
+        <p class="hint">Make sure your target is powered on and nearby</p>
+        <button class="scan-btn" (click)="onDemoClicked()">Demo Mode</button>
+      </div>
+
+      <!-- Scanning State -->
+      <div *ngIf="isScanning" class="scanning-state">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Scanning for targets...</p>
+      </div>
+    </div>
+
+    <!-- Scan Button -->
+    <button
+      class="scan-btn"
+      [disabled]="isScanning || isConnecting"
+      (click)="scanForDevices()"
+    >
+      <ion-spinner *ngIf="isScanning" name="crescent"></ion-spinner>
+      <ion-icon *ngIf="!isScanning" name="refresh-outline"></ion-icon>
+      {{ isScanning ? 'SCANNING...' : 'SCAN FOR NEW TARGETS' }}
+    </button>
+  </div>
+</ion-content>

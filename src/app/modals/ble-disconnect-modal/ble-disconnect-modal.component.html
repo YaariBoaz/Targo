@@ -1,0 +1,60 @@
+<div class="disconnect-modal">
+  <div class="modal-content">
+    <!-- Icon -->
+    <div class="icon-container">
+      <ion-icon name="bluetooth-outline" class="disconnect-icon"></ion-icon>
+    </div>
+
+    <!-- Title -->
+    <h1 class="modal-title">TARGET DISCONNECTED</h1>
+
+    <!-- Message -->
+    <p class="modal-message">
+      Connection to your ADL Monitor target has been lost.
+    </p>
+
+    <!-- Reconnection Status -->
+    <div *ngIf="isReconnecting" class="reconnecting-status">
+      <div class="spinner"></div>
+      <p>Attempting to reconnect...</p>
+    </div>
+
+    <div *ngIf="reconnectFailed" class="error-message">
+      <p>Reconnection failed. Please try scanning for targets again.</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="button-group">
+      <!-- Reconnect Button -->
+      <button
+        *ngIf="showReconnectButton"
+        class="action-btn reconnect-btn"
+        [disabled]="isReconnecting"
+        (click)="reconnect()"
+      >
+        <ion-icon name="refresh-outline"></ion-icon>
+        <span>{{ isReconnecting ? 'RECONNECTING...' : 'RECONNECT' }}</span>
+      </button>
+
+      <!-- Dashboard Button -->
+      <button
+        class="action-btn dashboard-btn"
+        [disabled]="isReconnecting"
+        (click)="goToDashboard()"
+      >
+        <ion-icon name="home-outline"></ion-icon>
+        <span>GO TO DASHBOARD</span>
+      </button>
+
+      <!-- Target Scan Button -->
+      <button
+        class="action-btn scan-btn"
+        [disabled]="isReconnecting"
+        (click)="goToTargetScan()"
+      >
+        <ion-icon name="bluetooth-outline"></ion-icon>
+        <span>SCAN FOR TARGETS</span>
+      </button>
+    </div>
+  </div>
+</div>

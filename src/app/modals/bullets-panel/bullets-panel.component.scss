@@ -1,0 +1,188 @@
+.bullets-panel {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-radius: 20px 20px 0 0;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+// Drag Handle
+.drag-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  margin: 12px auto 8px;
+  flex-shrink: 0;
+}
+
+// Header
+.panel-header {
+  padding: 20px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.panel-title {
+  color: #fff;
+  font-family: Lexend;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  text-transform: uppercase;
+  margin: 0 0 8px 0;
+}
+
+.panel-subtitle {
+  color: #fff;
+  font-family: Lexend;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 21px;
+  margin: 0;
+}
+.close-btn {
+  background: #373739;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 100%;
+  padding: 0.5em;
+}
+
+// Content
+.panel-content {
+  flex: 1;
+  padding: 0 20px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // Smooth scrolling
+  -webkit-overflow-scrolling: touch;
+
+  // Styled scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+  }
+}
+
+// Subscription Cards
+.subscription-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subscription-card {
+  border-radius: 2px;
+  border: 1px solid #f6ba16;
+  width: 90vw;
+  flex-shrink: 0;
+  padding: 0.5em;
+  &:active {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #f6ba16;
+    transform: scale(0.98);
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  .plan-name {
+    font-family: Lexend;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+  }
+  .price {
+    color: #f6ba16;
+    font-family: Lexend;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+  }
+
+  .best-offer {
+    color: #00ff6a;
+    font-family: Lexend;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+  }
+  .badge {
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &.recommended {
+      background: #f6ba16;
+      color: #000000;
+    }
+  }
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  ul {
+    list-style-type: square;
+
+    li::marker {
+      background: #f6ba16;
+      color: #f6ba16;
+    }
+    li {
+      color: #fff;
+
+      font-family: Lexend;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 300;
+      line-height: normal;
+    }
+  }
+
+  .bullets {
+    font-size: 0.875rem;
+    color: #ffffff;
+    font-weight: 500;
+  }
+
+  .per-bullet {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+  }
+}

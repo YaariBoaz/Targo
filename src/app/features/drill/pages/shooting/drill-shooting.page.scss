@@ -1,0 +1,203 @@
+@use "../../../../../theme/mixins.scss" as *;
+
+.shooting-page {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--spacing-lg) + var(--safe-area-top))
+    calc(var(--spacing-lg) + var(--safe-area-left)) var(--spacing-md)
+    calc(var(--spacing-lg) + var(--safe-area-right));
+}
+
+.side-stats {
+  padding: 0 calc(var(--spacing-lg) + var(--safe-area-left)) 0
+    calc(var(--spacing-lg) + var(--safe-area-right));
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.stat-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--brand-white);
+
+  &.shots {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--brand-gold);
+  }
+}
+
+.exit-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: #d32f2f;
+  border: none;
+  border-radius: 4px;
+  color: var(--brand-white);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #b71c1c;
+  }
+}
+
+.target-container {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--spacing-md) var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  padding-bottom: 0;
+  min-height: 0;
+}
+
+.target {
+  position: relative;
+  width: min(340px, 80vw);
+  height: calc(min(340px, 80vw) * 1.5); // 2:3 aspect ratio (width:height)
+  background: url("/assets/targets/Target 6040.png") center/contain no-repeat;
+  cursor: crosshair;
+}
+
+.target-hitbox {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: all;
+}
+
+.shot-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: var(--brand-gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+// Stats Sheet (Bottom Drawer)
+.stats-sheet {
+  position: fixed;
+  bottom: calc(var(--safe-area-bottom));
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  border-radius: 16px 16px 0 0;
+  transition: transform 0.3s ease;
+  transform: translateY(calc(100% - 60px));
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 25vh;
+  overflow: hidden;
+
+  &.expanded {
+    transform: translateY(0);
+  }
+}
+
+.sheet-handle {
+  padding: var(--spacing-md);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.handle-arrow {
+  transition: transform 0.3s ease;
+
+  &.flipped {
+    transform: rotate(180deg);
+  }
+}
+
+.sheet-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--brand-white);
+  margin: 0;
+}
+
+.sheet-content {
+  overflow-y: auto;
+  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+  flex: 1;
+}
+
+.stats-header {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: var(--spacing-sm);
+}
+
+.header-cell {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.stats-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-cell {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--brand-gold);
+  text-align: center;
+}

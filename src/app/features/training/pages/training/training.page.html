@@ -1,0 +1,92 @@
+<ion-content class="training-content" [fullscreen]="true">
+  <!-- Background -->
+  <div class="background-gradient"></div>
+
+  <!-- Scrollable Content Container -->
+  <div class="training-scroll-container">
+    <div class="training-container">
+      <!-- Title -->
+      <h1 class="page-title">DRILL SETUP</h1>
+
+      <!-- Distance Input -->
+      <div class="form-group">
+        <label class="form-label">DISTANCE</label>
+        <input
+          type="number"
+          [(ngModel)]="distance"
+          class="form-input"
+          placeholder="50"
+        />
+      </div>
+
+      <!-- Weapon Category -->
+      <div class="form-group">
+        <label class="form-label">WEAPON CATEGORY</label>
+        <div class="category-buttons">
+          <button
+            class="category-btn"
+            [class.active]="selectedCategory === 'pistol'"
+            (click)="selectCategory('pistol')"
+          >
+            PISTOL
+          </button>
+          <button
+            class="category-btn"
+            [class.active]="selectedCategory === 'rifle'"
+            (click)="selectCategory('rifle')"
+          >
+            RIFLE
+          </button>
+          <button
+            class="category-btn"
+            [class.active]="selectedCategory === 'sniper'"
+            (click)="selectCategory('sniper')"
+          >
+            SNIPER
+          </button>
+        </div>
+      </div>
+
+      <!-- Weapon Type Dropdown -->
+      <div class="form-group">
+        <label class="form-label">WEAPON TYPE</label>
+        <select [(ngModel)]="selectedWeapon" class="form-select">
+          @for (weapon of filteredWeapons; track weapon.id) {
+          <option [value]="weapon.id">{{ weapon.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Number of Bullets -->
+      <div class="form-group">
+        <label class="form-label">NUMBER OF BULLETS</label>
+        <input
+          type="number"
+          [(ngModel)]="numberOfBullets"
+          [max]="maxBullets"
+          class="form-input"
+          placeholder="15"
+        />
+      </div>
+
+      <!-- Tip Box -->
+      <div class="tip-box">
+        <p class="tip-label">TIP:</p>
+        <p class="tip-text">{{ currentTip }}</p>
+      </div>
+
+      <!-- BLE Connection Button (only show if not connected) -->
+      @if(!isBleConnected){
+      <button class="ble-connection-btn" (click)="openBLEConnection()">
+        <ion-icon name="bluetooth-outline"></ion-icon>
+        CONNECT ADL MONITOR
+      </button>
+      } @else {
+      <button class="start-drill-btn" (click)="startDrill()">
+        START DRILL
+      </button>
+      }
+      <!-- Start Drill Button -->
+    </div>
+  </div>
+</ion-content>

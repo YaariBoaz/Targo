@@ -1,0 +1,21 @@
+<div class="drill-prepare-page">
+  <!-- Background Image -->
+  <div class="background-image"></div>
+
+  <!-- Close Button -->
+  <button class="close-btn" (click)="goBack()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <!-- Content -->
+  <div class="content">
+    <h1 class="title">ARE READY FOR<br />YOUR CHALLENGE?</h1>
+    <h2 class="challenge-name">{{ challengeTitle }}</h2>
+    <p class="description">{{ challengeDescription }}</p>
+  </div>
+
+  <!-- Start Button -->
+  <button class="start-btn" (click)="startShooting()">START SHOOTING</button>
+</div>

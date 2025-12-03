@@ -1,0 +1,95 @@
+<div class="challenges-page">
+  <div class="background-gradient"></div>
+
+  <!-- Header -->
+  <div class="challenges-header">
+    <!-- User Header Component -->
+    <app-user-header></app-user-header>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'my'" (click)="switchTab('my')">
+        MY CHALLENGES
+      </button>
+      <button class="tab" [class.active]="activeTab === 'global'" (click)="switchTab('global')">
+        GLOBAL
+      </button>
+      <button class="tab" [class.active]="activeTab === 'heroes'" (click)="switchTab('heroes')">
+        HEROS
+      </button>
+    </div>
+  </div>
+
+  <!-- Scrollable Content -->
+  <div class="challenges-scroll-container">
+    <div class="challenges-content">
+      <!-- My Challenges Tab -->
+      @if (activeTab === 'my') {
+        <div class="challenges-list">
+          @for (challenge of myChallenges; track challenge.id) {
+            <div class="challenge-card" (click)="onChallengeClick(challenge)">
+              <div class="challenge-image">
+                <img [src]="challenge.imageUrl" [alt]="challenge.title" />
+              </div>
+              <div class="challenge-details">
+                <h3 class="challenge-title">{{ challenge.title }}</h3>
+                <p class="challenge-rank">Rank: <span class="rank-value">{{ challenge.completedDrills }}/{{ challenge.drillsCount }}</span></p>
+                <p class="challenge-description">{{ challenge.description }}</p>
+
+                @if (challenge.isCompleted) {
+                  <button class="challenge-btn completed">COMPLETED</button>
+                } @else if (challenge.progress && challenge.progress > 0) {
+                  <button class="challenge-btn continue">CONTINUE</button>
+                } @else {
+                  <button class="challenge-btn start">START</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Global Challenges Tab -->
+      @if (activeTab === 'global') {
+        <div class="challenges-list">
+          @for (challenge of globalChallenges; track challenge.id) {
+            <div class="challenge-card" (click)="onChallengeClick(challenge)">
+              <div class="challenge-image">
+                <img [src]="challenge.imageUrl" [alt]="challenge.title" />
+              </div>
+              <div class="challenge-details">
+                <h3 class="challenge-title">{{ challenge.title }}</h3>
+                <p class="challenge-rank">
+                  Difficulty: <span class="rank-value" [style.color]="getDifficultyColor(challenge.difficulty)">{{ challenge.difficulty | uppercase }}</span>
+                </p>
+                <p class="challenge-description">{{ challenge.description }}</p>
+                <button class="challenge-btn start">START</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Heroes Challenges Tab -->
+      @if (activeTab === 'heroes') {
+        <div class="challenges-list">
+          @for (challenge of heroesChallenges; track challenge.id) {
+            <div class="challenge-card" (click)="onChallengeClick(challenge)">
+              <div class="challenge-image">
+                <img [src]="challenge.imageUrl" [alt]="challenge.title" />
+              </div>
+              <div class="challenge-details">
+                <h3 class="challenge-title">{{ challenge.title }}</h3>
+                <p class="challenge-rank">
+                  Drills: <span class="rank-value">{{ challenge.drillsCount }}</span>
+                </p>
+                <p class="challenge-description">{{ challenge.description }}</p>
+                <button class="challenge-btn start">START</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
