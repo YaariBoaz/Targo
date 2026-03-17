@@ -1,66 +1,42 @@
-import { inject } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import { Router } from '@angular/router';
 import { BulletsService } from '@core/services/bullets.service';
-import { InsufficientBulletsModalComponent } from '../modals/insufficient-bullets-modal/insufficient-bullets-modal.component';
+import { FEATURE_FLAGS } from '@core/feature-flags';
 
 /**
- * Utility functions for bullet management
- */
-
-/**
- * Check if user has enough bullets and show modal if not
- * @param requiredBullets Number of bullets required
- * @param modalCtrl ModalController instance
- * @param bulletsService BulletsService instance
- * @returns Promise<boolean> - true if user has enough bullets or purchased, false if cancelled
+ * Check if user has enough bullets and navigate to store if not.
+ * Skipped entirely when FEATURE_FLAGS.bulletSystemEnabled is false.
  */
 export async function checkAndDeductBullets(
   requiredBullets: number,
-  modalCtrl: ModalController,
+  router: Router,
   bulletsService: BulletsService
 ): Promise<boolean> {
-  // Check if user has enough bullets
+  // Bullet system disabled — let the user proceed without any check
+  if (!FEATURE_FLAGS.bulletSystemEnabled) {
+    return true;
+  }
+
   const hasEnough = bulletsService.hasEnoughBullets(requiredBullets);
 
   if (!hasEnough) {
-    // Show insufficient bullets modal
-    const modal = await modalCtrl.create({
-      component: InsufficientBulletsModalComponent,
-      componentProps: {
-        requiredBullets: requiredBullets,
-      },
-      cssClass: 'insufficient-bullets-modal-class',
+    const bulletsNeeded = requiredBullets - bulletsService.getCurrentBulletCount();
+    router.navigate(['/store'], {
+      queryParams: { bullets: bulletsNeeded, required: requiredBullets }
     });
-
-    await modal.present();
-    await modal.onDidDismiss();
-
-    // After modal is dismissed, check again if user has enough bullets
-    // (they might have purchased in the store)
-    return bulletsService.hasEnoughBullets(requiredBullets);
+    return false;
   }
 
-  // User has enough bullets, deduct them
   const success = await bulletsService.deductBullets(requiredBullets);
   return success;
 }
 
-/**
- * Show insufficient bullets modal
- * @param requiredBullets Number of bullets required
- * @param modalCtrl ModalController instance
- */
-export async function showInsufficientBulletsModal(
+export async function navigateToStoreForBullets(
   requiredBullets: number,
-  modalCtrl: ModalController
+  router: Router,
+  bulletsService: BulletsService
 ): Promise<void> {
-  const modal = await modalCtrl.create({
-    component: InsufficientBulletsModalComponent,
-    componentProps: {
-      requiredBullets: requiredBullets,
-    },
-    cssClass: 'insufficient-bullets-modal-class',
+  const bulletsNeeded = requiredBullets - bulletsService.getCurrentBulletCount();
+  router.navigate(['/store'], {
+    queryParams: { bullets: bulletsNeeded, required: requiredBullets }
   });
-
-  await modal.present();
 }

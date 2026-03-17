@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import {
-  Auth as FirebaseAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -9,19 +8,27 @@ import {
   FacebookAuthProvider,
   signInWithCredential,
   onAuthStateChanged,
-} from '@angular/fire/auth';
+  updateProfile,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { Capacitor } from '@capacitor/core';
 import { FirestoreService } from './firestore';
+import { GuestService } from './guest.service';
+import { BulletsService } from './bullets.service';
+import { FirebaseService } from '../../shared/services/firebase.service';
+import { UserProfile } from '../../models/user.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private auth = inject(FirebaseAuth);
+  private firebase = inject(FirebaseService);
   private firestoreService = inject(FirestoreService);
+  private guestService = inject(GuestService);
+  private bulletsService = inject(BulletsService);
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> =
     this.currentUserSubject.asObservable();
@@ -29,12 +36,17 @@ export class AuthService {
   constructor() {
     // Listen to auth state changes with error handling
     try {
-      onAuthStateChanged(this.auth, (user) => {
+      onAuthStateChanged(this.firebase.auth, (user) => {
         this.currentUserSubject.next(user);
+        // Initialize bullets as soon as auth state is confirmed
+        if (user) {
+          this.bulletsService.initialize(user.uid);
+        } else {
+          this.bulletsService.reset();
+        }
       });
     } catch (error) {
       console.error('Error setting up auth state listener:', error);
-      // Initialize with null user if auth setup fails
       this.currentUserSubject.next(null);
     }
   }
@@ -63,13 +75,16 @@ export class AuthService {
   async loginWithEmail(email: string, password: string): Promise<User> {
     try {
       const credential = await signInWithEmailAndPassword(
-        this.auth,
+        this.firebase.auth,
         email,
         password
       );
 
-      // Save user to Firestore
-      await this.saveUserToFirestore(credential.user);
+      // Disable guest mode when user logs in
+      this.guestService.disableGuestMode();
+
+      // Save user to Firestore in the background — don't block navigation
+      this.saveUserToFirestore(credential.user);
 
       return credential.user;
     } catch (error: any) {
@@ -82,13 +97,55 @@ export class AuthService {
   async registerWithEmail(email: string, password: string): Promise<User> {
     try {
       const credential = await createUserWithEmailAndPassword(
-        this.auth,
+        this.firebase.auth,
         email,
         password
       );
 
+      // Disable guest mode when user registers
+      this.guestService.disableGuestMode();
+
       // Save new user to Firestore
       await this.saveUserToFirestore(credential.user);
+
+      return credential.user;
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      throw this.handleAuthError(error);
+    }
+  }
+
+  // Email/Password Registration with Profile Data
+  async registerWithEmailAndProfile(
+    email: string,
+    password: string,
+    profileData: Partial<UserProfile>
+  ): Promise<User> {
+    try {
+      const credential = await createUserWithEmailAndPassword(
+        this.firebase.auth,
+        email,
+        password
+      );
+
+      // Disable guest mode when user registers
+      this.guestService.disableGuestMode();
+
+      // Update Firebase Auth profile with displayName and photoURL
+      if (profileData.nickname || profileData.photoURL) {
+        await updateProfile(credential.user, {
+          displayName: profileData.nickname || null,
+          photoURL: profileData.photoURL || null,
+        });
+      }
+
+      // Save new user to Firestore with additional profile data
+      await this.saveUserToFirestore(credential.user);
+
+      // Update Firestore with additional profile information
+      if (Object.keys(profileData).length > 0) {
+        await this.firestoreService.updateUserProfile(credential.user.uid, profileData);
+      }
 
       return credential.user;
     } catch (error: any) {
@@ -128,21 +185,27 @@ export class AuthService {
       const credential = GoogleAuthProvider.credential(googleUser.authentication.idToken);
 
       // Sign in to Firebase with the credential
-      const result = await signInWithCredential(this.auth, credential);
+      const result = await signInWithCredential(this.firebase.auth, credential);
 
-      // Save user to Firestore
-      await this.saveUserToFirestore(result.user);
+      // Disable guest mode when user logs in with Google
+      this.guestService.disableGuestMode();
+
+      // Save user to Firestore in the background — don't block navigation
+      this.saveUserToFirestore(result.user);
 
       return result.user;
     } catch (error: any) {
       console.error('Google login error:', error);
 
       // Handle specific error cases
-      if (error.message?.includes('12501')) {
+      if (error.message?.includes('12501') || error.code === '12501') {
         throw new Error('Google sign-in was cancelled');
       }
-      if (error.message?.includes('10')) {
-        throw new Error('Google Play Services not available. Please update Google Play Services.');
+      if (error.message?.includes('10:') || error.code === '10' || error.message?.includes('DEVELOPER_ERROR')) {
+        throw new Error('Google sign-in configuration error (code 10). The app SHA-1 fingerprint may not be registered in Firebase Console.');
+      }
+      if (error.message?.includes('12500') || error.code === '12500') {
+        throw new Error('Google sign-in failed. Please try again.');
       }
 
       throw new Error(error.message || 'Google login failed. Please try again.');
@@ -165,16 +228,31 @@ export class AuthService {
         throw new Error('Facebook login was cancelled or failed');
       }
 
-      // Get the current user from Firebase Auth (this ensures we have the correct User type)
-      const currentUser = this.auth.currentUser;
-      if (!currentUser) {
-        throw new Error('Failed to get authenticated user');
+      console.log('Facebook login result:', result);
+      console.log('Result credential:', result.credential);
+
+      // Check if we have a credential with access token
+      if (!result.credential || !result.credential.accessToken) {
+        throw new Error('Failed to get Facebook access token');
       }
 
-      // Save user to Firestore
-      await this.saveUserToFirestore(currentUser);
+      // Create a Facebook credential using the access token
+      const credential = FacebookAuthProvider.credential(result.credential.accessToken);
 
-      return currentUser;
+      console.log('Signing in with credential...');
+
+      // Sign in to Firebase with the Facebook credential
+      const userCredential = await signInWithCredential(this.firebase.auth, credential);
+
+      console.log('Successfully signed in:', userCredential.user.uid);
+
+      // Disable guest mode when user logs in with Facebook
+      this.guestService.disableGuestMode();
+
+      // Save user to Firestore in the background — don't block navigation
+      this.saveUserToFirestore(userCredential.user);
+
+      return userCredential.user;
     } catch (error: any) {
       console.error('Facebook login error:', error);
 
@@ -190,10 +268,21 @@ export class AuthService {
   // Logout
   async logout(): Promise<void> {
     try {
-      await signOut(this.auth);
+      await signOut(this.firebase.auth);
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
+    }
+  }
+
+  // Send Password Reset Email
+  async resetPassword(email: string): Promise<void> {
+    try {
+      await sendPasswordResetEmail(this.firebase.auth, email);
+      console.log('Password reset email sent to:', email);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      throw this.handleAuthError(error);
     }
   }
 

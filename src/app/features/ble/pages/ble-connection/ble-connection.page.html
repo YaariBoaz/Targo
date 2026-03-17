@@ -1,8 +1,6 @@
 <ion-content class="ble-content" [fullscreen]="true">
-  <!-- Background -->
   <div class="background-gradient"></div>
 
-  <!-- Scrollable Content Container -->
   <div class="ble-scroll-container">
     <!-- Back Button -->
     <div class="back-button" (click)="goBack()">
@@ -10,72 +8,127 @@
       BACK
     </div>
 
-    <!-- Title -->
-    <h1 class="page-title">AVAILABLE TARGETS</h1>
+    <!-- ── WiFi Mode ─────────────────────────────────────────────────────── -->
+    <ng-container *ngIf="isWifiMode">
+      <h1 class="page-title">AVAILABLE NETWORKS</h1>
 
-    <!-- Device List -->
-    <div class="targets-list">
-      <div *ngFor="let device of devices" class="target-card">
-        <!-- Target Image Placeholder -->
-        <div class="target-image">
-          <img
-            src="/assets/targets/target-card.png"
-            alt="Target"
-            onerror="this.style.display='none'"
-          />
-          <div class="target-placeholder" *ngIf="!hasImage">
-            <ion-icon name="bluetooth-outline"></ion-icon>
+      <p class="page-subtitle">
+        Select the ADL target's WiFi network. The app will connect to
+        <strong>{{ wifiConfig.targetIp }}:{{ wifiConfig.targetPort }}</strong>
+        once joined.
+      </p>
+
+      <!-- Network List -->
+      <div class="targets-list">
+
+        <!-- Scanning State -->
+        <div *ngIf="isScanning" class="scanning-state">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Scanning for networks...</p>
+        </div>
+
+        <!-- Network Cards -->
+        <div
+          *ngFor="let network of wifiNetworks"
+          class="target-card"
+          [class.target-network]="network.isTarget"
+        >
+          <div class="target-image wifi-icon-wrap">
+            <ion-icon name="wifi-outline"></ion-icon>
+            <div class="signal-bars">
+              <span *ngFor="let bar of [1,2,3,4]"
+                class="bar"
+                [class.active]="bar <= getSignalBars(network.rssi)">
+              </span>
+            </div>
+          </div>
+
+          <div class="target-info">
+            <h2 class="target-name">
+              {{ network.ssid }}
+              <span *ngIf="network.isTarget" class="target-badge">ADL TARGET</span>
+            </h2>
+            <p class="target-distance">{{ network.rssi }} dBm</p>
+
+            <button
+              class="connect-btn"
+              [class.connecting]="connectingSSID === network.ssid"
+              [disabled]="isConnecting"
+              (click)="connectToWifi(network)"
+            >
+              <ion-spinner *ngIf="connectingSSID === network.ssid" name="crescent"></ion-spinner>
+              <span *ngIf="connectingSSID !== network.ssid">CONNECT</span>
+              <span *ngIf="connectingSSID === network.ssid">CONNECTING...</span>
+            </button>
           </div>
         </div>
 
-        <!-- Target Info -->
-        <div class="target-info">
-          <h2 class="target-name">{{ device.name}}</h2>
-          <p class="target-distance">{{ getDeviceSignalStrength(device) }}</p>
-
-          <!-- Connect Button -->
-          <button
-            class="connect-btn"
-            [class.connecting]="connectingDeviceId === device.deviceId"
-            [disabled]="isConnecting"
-            (click)="connectToDevice(device)"
-          >
-            <ion-spinner
-              *ngIf="connectingDeviceId === device.deviceId"
-              name="crescent"
-            ></ion-spinner>
-            <span *ngIf="connectingDeviceId !== device.deviceId">CONNECT</span>
-            <span *ngIf="connectingDeviceId === device.deviceId"
-              >CONNECTING...</span
-            >
-          </button>
+        <!-- No Networks Found -->
+        <div *ngIf="!isScanning && wifiNetworks.length === 0" class="no-devices">
+          <ion-icon name="wifi-outline"></ion-icon>
+          <p>No WiFi networks found</p>
+          <p class="hint">Make sure Location permission is granted and WiFi is enabled</p>
         </div>
       </div>
 
-      <!-- No Devices Found -->
-      <div *ngIf="!isScanning && devices.length === 0" class="no-devices">
-        <ion-icon name="bluetooth-outline"></ion-icon>
-        <p>No ADL Monitor targets found</p>
-        <p class="hint">Make sure your target is powered on and nearby</p>
-        <button class="scan-btn" (click)="onDemoClicked()">Demo Mode</button>
+      <!-- Scan Button -->
+      <button class="scan-btn" [disabled]="isScanning || isConnecting" (click)="scanWifiNetworks()">
+        <ion-spinner *ngIf="isScanning" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!isScanning" name="refresh-outline"></ion-icon>
+        {{ isScanning ? 'SCANNING...' : 'SCAN FOR NETWORKS' }}
+      </button>
+
+      <button class="scan-btn demo-btn" (click)="onDemoClicked()">Demo Mode</button>
+    </ng-container>
+
+    <!-- ── BLE Mode ──────────────────────────────────────────────────────── -->
+    <ng-container *ngIf="!isWifiMode">
+      <h1 class="page-title">AVAILABLE TARGETS</h1>
+
+      <div class="targets-list">
+        <div *ngFor="let device of devices" class="target-card">
+          <div class="target-image">
+            <img src="/assets/targets/target-card.png" alt="Target" onerror="this.style.display='none'" />
+            <div class="target-placeholder" *ngIf="!hasImage">
+              <ion-icon name="bluetooth-outline"></ion-icon>
+            </div>
+          </div>
+
+          <div class="target-info">
+            <h2 class="target-name">{{ device.name }}</h2>
+            <p class="target-distance">{{ getDeviceSignalStrength(device) }}</p>
+
+            <button
+              class="connect-btn"
+              [class.connecting]="connectingDeviceId === device.deviceId"
+              [disabled]="isConnecting"
+              (click)="connectToDevice(device)"
+            >
+              <ion-spinner *ngIf="connectingDeviceId === device.deviceId" name="crescent"></ion-spinner>
+              <span *ngIf="connectingDeviceId !== device.deviceId">CONNECT</span>
+              <span *ngIf="connectingDeviceId === device.deviceId">CONNECTING...</span>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="!isScanning && devices.length === 0" class="no-devices">
+          <ion-icon name="bluetooth-outline"></ion-icon>
+          <p>No ADL Monitor targets found</p>
+          <p class="hint">Make sure your target is powered on and nearby</p>
+          <button class="scan-btn" (click)="onDemoClicked()">Demo Mode</button>
+        </div>
+
+        <div *ngIf="isScanning" class="scanning-state">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Scanning for targets...</p>
+        </div>
       </div>
 
-      <!-- Scanning State -->
-      <div *ngIf="isScanning" class="scanning-state">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Scanning for targets...</p>
-      </div>
-    </div>
-
-    <!-- Scan Button -->
-    <button
-      class="scan-btn"
-      [disabled]="isScanning || isConnecting"
-      (click)="scanForDevices()"
-    >
-      <ion-spinner *ngIf="isScanning" name="crescent"></ion-spinner>
-      <ion-icon *ngIf="!isScanning" name="refresh-outline"></ion-icon>
-      {{ isScanning ? 'SCANNING...' : 'SCAN FOR NEW TARGETS' }}
-    </button>
+      <button class="scan-btn" [disabled]="isScanning || isConnecting" (click)="scanForDevices()">
+        <ion-spinner *ngIf="isScanning" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!isScanning" name="refresh-outline"></ion-icon>
+        {{ isScanning ? 'SCANNING...' : 'SCAN FOR NEW TARGETS' }}
+      </button>
+    </ng-container>
   </div>
 </ion-content>

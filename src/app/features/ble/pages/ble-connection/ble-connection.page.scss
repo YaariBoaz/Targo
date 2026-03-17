@@ -28,7 +28,9 @@
   padding-top: calc(var(--spacing-lg) + var(--safe-area-top));
   padding-left: calc(var(--spacing-lg) + var(--safe-area-left));
   padding-right: calc(var(--spacing-lg) + var(--safe-area-right));
-  padding-bottom: calc(var(--spacing-xl) + var(--safe-area-bottom));
+  // Extra 56px accounts for the Android navigation bar on devices where
+  // safe-area-inset-bottom reports 0 (3-button nav, some gesture configs)
+  padding-bottom: calc(var(--spacing-xl) + max(var(--safe-area-bottom), 56px));
 
   @include respond-below($breakpoint-sm) {
     padding-top: calc(var(--spacing-md) + var(--safe-area-top));
@@ -289,6 +291,159 @@
 
   @include respond-below($breakpoint-sm) {
     font-size: 0.8125rem;
+  }
+}
+
+// Page subtitle
+.page-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin: -var(--spacing-md) 0 var(--spacing-xl) 0;
+  line-height: 1.5;
+
+  strong {
+    color: var(--brand-gold);
+    font-family: monospace;
+  }
+}
+
+// WiFi icon inside target-image slot
+.wifi-icon-wrap {
+  background: rgba(246, 186, 22, 0.08) !important;
+  flex-direction: column;
+  gap: 8px;
+
+  ion-icon {
+    font-size: 2.5rem;
+    color: var(--brand-gold);
+  }
+}
+
+// Signal bars
+.signal-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+
+  .bar {
+    width: 5px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+
+    &:nth-child(1) { height: 5px; }
+    &:nth-child(2) { height: 9px; }
+    &:nth-child(3) { height: 13px; }
+    &:nth-child(4) { height: 18px; }
+
+    &.active { background: var(--brand-gold); }
+  }
+}
+
+// ADL target badge
+.target-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: rgba(246, 186, 22, 0.15);
+  border: 1px solid var(--brand-gold);
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--brand-gold);
+  vertical-align: middle;
+}
+
+// Highlight ADL target networks
+.target-network {
+  border-color: rgba(246, 186, 22, 0.4) !important;
+  background: rgba(246, 186, 22, 0.04) !important;
+}
+
+// Demo button (secondary style)
+.demo-btn {
+  margin-top: var(--spacing-sm);
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  min-height: 44px !important;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05) !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+
+// WiFi Form
+.wifi-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  max-width: 400px;
+  margin: 0 auto;
+
+  .wifi-icon-wrap {
+    ion-icon {
+      font-size: 4rem;
+      color: var(--brand-gold);
+    }
+  }
+
+  .wifi-hint {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    margin: 0;
+  }
+
+  .wifi-field {
+    width: 100%;
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .wifi-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px var(--spacing-md);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      color: var(--brand-white);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+
+      &:focus {
+        border-color: var(--brand-gold);
+      }
+    }
+  }
+
+  .demo-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    min-height: 44px;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--brand-white);
+      transform: none;
+      box-shadow: none;
+    }
   }
 }
 

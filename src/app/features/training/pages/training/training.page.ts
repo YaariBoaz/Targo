@@ -5,10 +5,8 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
-  ViewWillEnter,
   LoadingController,
   ToastController,
-  ModalController,
 } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { TipsService } from '@core/services/tips.service';
@@ -16,6 +14,7 @@ import { DrillService } from '@core/services/drill.service';
 import { AuthService } from '@core/services/auth';
 import { BulletsService } from '@core/services/bullets.service';
 import { BLEService } from '@core/services/ble.service';
+import { TabRefreshService } from '@core/services/tab-refresh.service';
 import { DrillSetup } from '@models/drill-session.model';
 import { checkAndDeductBullets } from '@utils/bullets.utils';
 import { addIcons } from 'ionicons';
@@ -37,7 +36,7 @@ export interface WeaponType {
   templateUrl: './training.page.html',
   styleUrls: ['./training.page.scss'],
 })
-export class TrainingPage implements OnInit, OnDestroy, ViewWillEnter {
+export class TrainingPage implements OnInit, OnDestroy {
   private tipsService = inject(TipsService);
   private drillService = inject(DrillService);
   private authService = inject(AuthService);
@@ -45,8 +44,9 @@ export class TrainingPage implements OnInit, OnDestroy, ViewWillEnter {
   private bleService = inject(BLEService);
   private loadingController = inject(LoadingController);
   private toastController = inject(ToastController);
-  private modalController = inject(ModalController);
+  private tabRefreshService = inject(TabRefreshService);
   private bleSubscription?: Subscription;
+  private tabSubscription?: Subscription;
 
   // Form data
   distance: number = 50;
@@ -100,19 +100,19 @@ export class TrainingPage implements OnInit, OnDestroy, ViewWillEnter {
     this.bleSubscription = this.bleService.connectionState$.subscribe((state) => {
       this.isBleConnected = this.bleService.isConnected();
     });
+
+    // Subscribe to tab changes to reload tips when training tab is activated
+    this.tabSubscription = this.tabRefreshService.tabChange$.subscribe(async (tabName) => {
+      if (tabName === 'training') {
+        console.log('Training page - Training tab activated, loading new tip...');
+        await this.loadRandomTip();
+      }
+    });
   }
 
   ngOnDestroy() {
     this.bleSubscription?.unsubscribe();
-  }
-
-  /**
-   * Ionic lifecycle hook - runs every time the view is about to enter
-   * This ensures a new random tip is loaded each time the user switches to this tab
-   */
-  async ionViewWillEnter() {
-    console.log('Training page - View entering, loading new tip...');
-    await this.loadRandomTip();
+    this.tabSubscription?.unsubscribe();
   }
 
   /**
@@ -165,7 +165,7 @@ export class TrainingPage implements OnInit, OnDestroy, ViewWillEnter {
     // Check if user has enough bullets and deduct them
     const hasEnoughBullets = await checkAndDeductBullets(
       this.numberOfBullets,
-      this.modalController,
+      this.router,
       this.bulletsService
     );
 
@@ -198,82 +198,16 @@ export class TrainingPage implements OnInit, OnDestroy, ViewWillEnter {
 
       console.log('Drill setup stored successfully, bullets deducted');
 
-      // Check if BLE is connected, if not navigate to BLE connection page
+      // Check if BLE is connected
       if (!this.bleService.isConnected()) {
+        // Not connected - navigate to BLE connection (target scanning) page
         this.router.navigate(['/ble-connection'], {
-          queryParams: { returnUrl: '/tabs/training' },
+          queryParams: { returnUrl: '/drill/prepare' },
         });
       } else {
-        // Already connected, go straight to drill preparation
+        // Already connected - go straight to drill preparation
         this.router.navigate(['/drill/prepare']);
       }
-    } catch (error: any) {
-      console.error('Error setting up drill:', error);
-      await this.showError(
-        error.message || 'Failed to set up drill. Please try again.'
-      );
-    }
-  }
-
-  async openBLEConnection() {
-    // Check if user is authenticated
-    const currentUser = this.authService.currentUser;
-    if (!currentUser) {
-      await this.showError('Please log in to connect');
-      return;
-    }
-
-    // Validate form data
-    if (!this.distance || this.distance <= 0) {
-      await this.showError('Please enter a valid distance');
-      return;
-    }
-
-    if (!this.numberOfBullets || this.numberOfBullets <= 0) {
-      await this.showError('Please enter a valid number of bullets');
-      return;
-    }
-
-    // Check if user has enough bullets and deduct them
-    const hasEnoughBullets = await checkAndDeductBullets(
-      this.numberOfBullets,
-      this.modalController,
-      this.bulletsService
-    );
-
-    if (!hasEnoughBullets) {
-      console.log('User does not have enough bullets or cancelled');
-      return; // User doesn't have enough bullets or cancelled the modal
-    }
-
-    try {
-      // Get selected weapon name
-      const selectedWeaponObj = this.weapons.find(
-        (w) => w.id === this.selectedWeapon
-      );
-      const weaponName = selectedWeaponObj?.name || 'Unknown';
-
-      // Create drill setup
-      const drillSetup: DrillSetup = {
-        distance: this.distance,
-        weaponCategory: this.selectedCategory,
-        weaponType: this.selectedWeapon,
-        weaponName: weaponName,
-        numberOfBullets: this.numberOfBullets,
-        source: 'training', // Explicitly mark as training drill
-      };
-
-      console.log('Storing drill setup before BLE connection:', drillSetup);
-
-      // Store drill setup in memory (not saved to Firestore yet)
-      this.drillService.setCurrentDrillSetup(currentUser.uid, drillSetup);
-
-      console.log('Drill setup stored, navigating to BLE connection');
-
-      // Navigate to BLE connection page
-      this.router.navigate(['/ble-connection'], {
-        queryParams: { returnUrl: '/tabs/training' },
-      });
     } catch (error: any) {
       console.error('Error setting up drill:', error);
       await this.showError(

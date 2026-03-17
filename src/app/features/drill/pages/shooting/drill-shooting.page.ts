@@ -1,17 +1,20 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController, ModalController } from '@ionic/angular/standalone';
 import { DrillService } from '@core/services/drill.service';
 import { ChallengeService } from '@core/services/challenge.service';
-import { BLEService, BLEConnectionState } from '@core/services/ble.service';
+import { BLEConnectionState } from '@core/services/ble.service';
+import { DeviceService } from '@core/services/device.service';
+import { MultiplayerService, MultiplayerSession } from '@core/services/multiplayer.service';
 import { DrillSetup } from '@models/drill-session.model';
 import {
   Shot,
   SessionStats,
   DrillSessionRecord,
 } from '@models/drill-session-record.model';
-import { Auth } from '@angular/fire/auth';
+import { FirebaseService } from '@shared/services/firebase.service';
 import { calculateADLScore } from '@utils/adl-score.util';
 import { DrillCompletionModalComponent } from '../../components/drill-completion-modal/drill-completion-modal.component';
 import { BleDisconnectModalComponent } from '@modals/ble-disconnect-modal/ble-disconnect-modal.component';
@@ -20,18 +23,19 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-drill-shooting',
   standalone: true,
-  imports: [CommonModule, DrillCompletionModalComponent],
+  imports: [CommonModule, FormsModule, DrillCompletionModalComponent],
   templateUrl: './drill-shooting.page.html',
   styleUrls: ['./drill-shooting.page.scss'],
 })
 export class DrillShootingPage implements OnInit, OnDestroy {
   private drillService = inject(DrillService);
   private challengeService = inject(ChallengeService);
-  private bleService = inject(BLEService);
+  private deviceService = inject(DeviceService);
+  private multiplayerService = inject(MultiplayerService);
   private router = inject(Router);
   private toastController = inject(ToastController);
   private modalController = inject(ModalController);
-  private auth = inject(Auth);
+  private firebase = inject(FirebaseService);
 
   drillSetup: DrillSetup | null = null;
   shots: Shot[] = [];
@@ -39,6 +43,7 @@ export class DrillShootingPage implements OnInit, OnDestroy {
   totalTime: number = 0;
   grouping: number = 0;
   isStatsExpanded: boolean = false;
+  isConnected: boolean = false;
 
   // Session statistics
   sessionStats: SessionStats[] = [];
@@ -48,15 +53,28 @@ export class DrillShootingPage implements OnInit, OnDestroy {
   completionStats: any = null;
   currentDrillOrder: number | undefined;
 
+  // Stop/Finish button state
+  confirmingFinish: boolean = false;
+  drillStopped: boolean = false;
+
   // BLE subscriptions
   private shotDataSubscription?: Subscription;
   private connectionStateSubscription?: Subscription;
+  private multiplayerSubscription?: Subscription;
 
   private timerInterval: any;
   private shootingInterval: any;
   private startTime: number = 0;
   private targetSize: number = 340; // pixels (matches CSS min(340px, 80vw))
   private isDemoMode: boolean = false;
+
+  // Multiplayer properties
+  multiplayerSession: MultiplayerSession | null = null;
+  isSpectatorMode: boolean = false;
+  chatMessage: string = '';
+  chatMessages: Array<{ user: string; message: string; timestamp: Date }> = [];
+  isChatExpanded: boolean = false;
+  isBettingExpanded: boolean = false;
 
   // Physical target dimensions (in cm) - adjust based on actual target
   private readonly PHYSICAL_TARGET_WIDTH_CM = 50;
@@ -72,6 +90,16 @@ export class DrillShootingPage implements OnInit, OnDestroy {
       this.router.navigate(['/tabs/training']);
       return;
     }
+
+    // Check for multiplayer mode
+    this.multiplayerSubscription = this.multiplayerService.multiplayerSession$.subscribe(
+      (session) => {
+        this.multiplayerSession = session;
+        this.isSpectatorMode = session.isSpectator;
+        console.log('[DrillShooting] Multiplayer session:', session);
+        console.log('[DrillShooting] Is spectator mode:', this.isSpectatorMode);
+      }
+    );
 
     // Fetch drill order for challenge drills
     if (
@@ -97,8 +125,9 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     this.totalShots = this.drillSetup.numberOfBullets;
     this.startTimer();
 
-    // Check if we're connected to a real BLE device or using demo mode
-    this.isDemoMode = !this.bleService.isConnected();
+    // Check if we're connected to a real device or using demo mode
+    this.isDemoMode = !this.deviceService.isConnected();
+    this.isConnected = this.deviceService.isConnected();
 
     if (this.isDemoMode) {
       console.log('Demo mode: Starting simulator');
@@ -124,6 +153,9 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     if (this.connectionStateSubscription) {
       this.connectionStateSubscription.unsubscribe();
     }
+    if (this.multiplayerSubscription) {
+      this.multiplayerSubscription.unsubscribe();
+    }
   }
 
   /**
@@ -131,7 +163,10 @@ export class DrillShootingPage implements OnInit, OnDestroy {
    */
   private subscribeToConnectionState() {
     this.connectionStateSubscription =
-      this.bleService.connectionState$.subscribe(async (state) => {
+      this.deviceService.connectionState$.subscribe(async (state) => {
+        // Update connection status
+        this.isConnected = state === BLEConnectionState.CONNECTED;
+
         // If device disconnects unexpectedly during drill
         if (
           state === BLEConnectionState.DISCONNECTED &&
@@ -171,9 +206,15 @@ export class DrillShootingPage implements OnInit, OnDestroy {
    * Subscribe to real BLE shot data from the device
    */
   private subscribeToShotData() {
-    this.shotDataSubscription = this.bleService.shotData$.subscribe(
+    this.shotDataSubscription = this.deviceService.shotData$.subscribe(
       (shotData) => {
         console.log('Received shot from BLE device:', shotData);
+
+        // Check if drill has been stopped by user
+        if (this.drillStopped) {
+          console.log('Drill stopped, ignoring shot');
+          return;
+        }
 
         // Check if drill is already complete (reached total shots)
         if (this.shots.length >= this.totalShots) {
@@ -254,6 +295,12 @@ export class DrillShootingPage implements OnInit, OnDestroy {
 
   private startAutoShooting() {
     const fireShot = () => {
+      // Check if drill has been stopped
+      if (this.drillStopped) {
+        console.log('Simulator stopped, no more shots');
+        return;
+      }
+
       if (this.shots.length >= this.totalShots) {
         this.completeDrill();
         return;
@@ -382,6 +429,14 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
+  get stopButtonText(): string {
+    // If all bullets have been shot OR user has clicked once to confirm
+    if (this.shots.length >= this.totalShots || this.confirmingFinish) {
+      return 'FINISH DRILL';
+    }
+    return 'STOP';
+  }
+
   formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -421,6 +476,44 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     this.router.navigate(['/tabs/training']);
   }
 
+  /**
+   * Handle STOP/FINISH DRILL button click
+   * First click: Stops the drill (timer and shot registration), changes button text to "FINISH DRILL"
+   * Second click: Saves drill and shows completion modal
+   * If all bullets are shot: Auto-changes to "FINISH DRILL" and saves on first click
+   */
+  handleStopFinish() {
+    // If all bullets are shot OR user has already clicked once (confirming)
+    if (this.shots.length >= this.totalShots || this.confirmingFinish) {
+      // Save the drill and show completion modal
+      this.completeDrill();
+    } else {
+      // First click - stop the drill and change button to "FINISH DRILL"
+      this.stopDrill();
+      this.confirmingFinish = true;
+    }
+  }
+
+  /**
+   * Stop the drill: stop timer, stop simulator, and prevent new shots from being registered
+   */
+  private stopDrill() {
+    // Stop the timer
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+
+    // Stop simulator mode if active
+    if (this.shootingInterval) {
+      clearTimeout(this.shootingInterval);
+    }
+
+    // Mark drill as stopped to prevent BLE shots from being registered
+    this.drillStopped = true;
+
+    console.log('Drill stopped by user');
+  }
+
   private async completeDrill() {
     // Stop all timers
     if (this.timerInterval) clearInterval(this.timerInterval);
@@ -449,7 +542,7 @@ export class DrillShootingPage implements OnInit, OnDestroy {
       shots: this.shots,
       statistics: finalStats,
       completedAt: new Date(),
-      uid: this.auth.currentUser?.uid || '',
+      uid: this.firebase.auth.currentUser?.uid || '',
       source: isChallengeDrill ? 'challenge' : 'training',
     };
 
@@ -486,12 +579,12 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     try {
       console.log('Attempting to save drill session...', sessionRecord);
 
-      if (!this.auth.currentUser) {
+      if (!this.firebase.auth.currentUser) {
         throw new Error('No authenticated user found');
       }
 
       const drillId = await this.drillService.saveDrillSession(
-        this.auth.currentUser.uid,
+        this.firebase.auth.currentUser.uid,
         sessionRecord
       );
 
@@ -504,7 +597,7 @@ export class DrillShootingPage implements OnInit, OnDestroy {
         sessionRecord.stars !== undefined
       ) {
         await this.challengeService.updateDrillAttempt(
-          this.auth.currentUser.uid,
+          this.firebase.auth.currentUser.uid,
           this.drillSetup!.challengeId!,
           this.drillSetup!.challengeDrillId!,
           drillId,
@@ -514,16 +607,24 @@ export class DrillShootingPage implements OnInit, OnDestroy {
         console.log('Challenge progress updated');
       }
 
-      // Show completion modal instead of toast
-      this.completionStats = {
-        score: sessionRecord.score || 0,
-        shots: this.shots.length,
-        totalTime: this.totalTime,
-        avgDistance: this.calculateAverageDistance(),
-        stars: sessionRecord.stars || 0,
-      };
+      // For multiplayer, navigate back to lobby
+      if (this.multiplayerSession?.isMultiplayer) {
+        // Clear multiplayer session
+        this.multiplayerService.endMultiplayerSession();
+        // Navigate back to lobby
+        this.router.navigate(['/multiplayer-lobby']);
+      } else {
+        // Show completion modal for regular drills
+        this.completionStats = {
+          score: sessionRecord.score || 0,
+          shots: this.shots.length,
+          totalTime: this.totalTime,
+          avgDistance: this.calculateAverageDistance(),
+          stars: sessionRecord.stars || 0,
+        };
 
-      this.showCompletionModal = true;
+        this.showCompletionModal = true;
+      }
     } catch (error: any) {
       console.error('Error saving drill:', error);
       console.error('Error message:', error?.message);
@@ -575,5 +676,107 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     // Restart the drill flow
     this.startTimer();
     this.startAutoShooting();
+  }
+
+  // Multiplayer methods
+  sendEmoji(emoji: string) {
+    console.log('sendEmoji called:', emoji);
+
+    // Create flying emoji animation
+    this.createFlyingEmoji(emoji);
+  }
+
+  private createFlyingEmoji(emoji: string) {
+    // Create emoji element
+    const emojiEl = document.createElement('div');
+    emojiEl.textContent = emoji;
+
+    // Inline styles for flying animation
+    emojiEl.style.position = 'fixed';
+    emojiEl.style.left = '20px';
+    emojiEl.style.bottom = '100px';
+    emojiEl.style.fontSize = '25px';
+    emojiEl.style.zIndex = '99999';
+    emojiEl.style.transition = 'all 2s ease-out';
+    emojiEl.style.opacity = '1';
+
+    // Add to body
+    document.body.appendChild(emojiEl);
+
+    // Trigger animation on next frame
+    requestAnimationFrame(() => {
+      emojiEl.style.bottom = '100vh';
+      emojiEl.style.transform = 'scale(1.5)';
+    });
+
+    // Remove after animation
+    setTimeout(() => {
+      emojiEl.remove();
+    }, 2000);
+  }
+
+  toggleBetting() {
+    this.isBettingExpanded = !this.isBettingExpanded;
+  }
+
+  placeBet(betType: string) {
+    if (!this.isSpectatorMode) return;
+
+    // TODO: Implement real-time betting logic
+    console.log('Placing bet:', betType);
+
+    // Show toast for demo purposes
+    const betNames: { [key: string]: string } = {
+      'bullseye': 'BULLSEYE (50 pts)',
+      'inner': 'INNER RING (30 pts)',
+      'outer': 'OUTER RING (10 pts)',
+      'miss': 'MISS (5 pts)'
+    };
+
+    this.showSuccess(`Bet placed: ${betNames[betType]}`);
+    this.toggleBetting();
+  }
+
+  toggleChat() {
+    this.isChatExpanded = !this.isChatExpanded;
+  }
+
+  sendChatMessage() {
+    if (!this.chatMessage.trim() || !this.isSpectatorMode) return;
+
+    const message = {
+      user: 'You',
+      message: this.chatMessage.trim(),
+      timestamp: new Date(),
+    };
+
+    this.chatMessages.push(message);
+    this.chatMessage = '';
+
+    // TODO: Implement real-time chat broadcast to other players
+    console.log('Sending chat message:', message);
+
+    // Scroll to bottom of chat
+    setTimeout(() => {
+      const chatContent = document.querySelector('.chat-messages');
+      if (chatContent) {
+        chatContent.scrollTop = chatContent.scrollHeight;
+      }
+    }, 100);
+  }
+
+  formatChatTime(timestamp: Date): string {
+    const hours = timestamp.getHours();
+    const minutes = timestamp.getMinutes();
+    return `${hours}:${minutes.toString().padStart(2, '0')}`;
+  }
+
+  calculateShotScore(avgDistance: number): number {
+    // Calculate score based on average distance from center
+    // Lower distance = higher score
+    // Bullseye (0cm) = 100, outer edge (50cm+) = 0
+    const maxDistance = 50; // cm
+    const score = Math.max(0, Math.round(100 - (avgDistance / maxDistance) * 100));
+    return score;
   }
 }

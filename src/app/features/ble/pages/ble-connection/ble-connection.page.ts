@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   IonContent,
   IonSpinner,
@@ -12,20 +13,31 @@ import {
   bluetoothOutline,
   refreshOutline,
   chevronBackOutline,
+  wifiOutline,
 } from 'ionicons/icons';
-import { BLEService, BLEConnectionState } from '@core/services/ble.service';
+import { BLEConnectionState } from '@core/services/ble.service';
+import { DeviceService } from '@core/services/device.service';
 import { BleDevice } from '@capacitor-community/bluetooth-le';
+import { CapacitorWifi } from '@capgo/capacitor-wifi';
+import { FEATURE_FLAGS } from '@core/feature-flags';
+import { WIFI_CONFIG } from '@core/wifi.config';
 import { Subscription } from 'rxjs';
+
+export interface WifiNetwork {
+  ssid: string;
+  rssi: number;
+  isTarget: boolean;
+}
 
 @Component({
   selector: 'app-ble-connection',
   standalone: true,
-  imports: [CommonModule, IonContent, IonSpinner, IonIcon],
+  imports: [CommonModule, FormsModule, IonContent, IonSpinner, IonIcon],
   templateUrl: './ble-connection.page.html',
   styleUrls: ['./ble-connection.page.scss'],
 })
 export class BLEConnectionPage implements OnInit, OnDestroy {
-  private bleService = inject(BLEService);
+  private deviceService = inject(DeviceService);
   private alertController = inject(AlertController);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -34,239 +46,254 @@ export class BLEConnectionPage implements OnInit, OnDestroy {
   private connectionStateSubscription?: Subscription;
   private errorSubscription?: Subscription;
 
-  // UI State
+  // ── WiFi state ─────────────────────────────────────────────────────────────
+  readonly isWifiMode = FEATURE_FLAGS.useWifiConnection;
+  readonly wifiConfig = WIFI_CONFIG;
+
+  wifiNetworks: WifiNetwork[] = [];
   isScanning = false;
+  connectingSSID: string | null = null;
+
+  // ── BLE state ──────────────────────────────────────────────────────────────
   isInitialized = false;
   connectingDeviceId: string | null = null;
   devices: BleDevice[] = [];
-  connectionState: BLEConnectionState = BLEConnectionState.DISCONNECTED;
   hasImage = false;
 
-  // Navigation
-  private returnUrl: string = '/tabs/training'; // Default return URL
+  // Shared
+  connectionState: BLEConnectionState = BLEConnectionState.DISCONNECTED;
+  private returnUrl: string = '/tabs/training';
 
   constructor() {
     addIcons({
       'bluetooth-outline': bluetoothOutline,
       'refresh-outline': refreshOutline,
       'chevron-back-outline': chevronBackOutline,
+      'wifi-outline': wifiOutline,
     });
   }
 
   async ngOnInit() {
-    // Get return URL from query params
     this.route.queryParams.subscribe((params) => {
-      if (params['returnUrl']) {
-        this.returnUrl = params['returnUrl'];
-      }
+      if (params['returnUrl']) this.returnUrl = params['returnUrl'];
     });
 
-    // Check if already connected - if so, skip to drill prepare
-    if (this.bleService.isConnected()) {
+    if (this.deviceService.isConnected()) {
       this.router.navigate(['/drill/prepare']);
       return;
     }
 
-    await this.initializeBLE();
     this.subscribeToUpdates();
 
-    // Auto-scan on load
-    await this.scanForDevices();
+    if (this.isWifiMode) {
+      await this.initWifi();
+    } else {
+      await this.initializeBLE();
+      await this.scanForDevices();
+    }
   }
 
   ngOnDestroy() {
-    this.unsubscribeAll();
+    this.connectionStateSubscription?.unsubscribe();
+    this.errorSubscription?.unsubscribe();
   }
 
-  /**
-   * Initialize BLE service
-   */
+  // ── WiFi ────────────────────────────────────────────────────────────────────
+
+  /** Check current SSID — skip scanner if already on the target network. */
+  private async initWifi() {
+    try {
+      await CapacitorWifi.requestPermissions();
+      const { ssid } = await CapacitorWifi.getSsid();
+      if (ssid === WIFI_CONFIG.targetSsid) {
+        console.log(`[BleConnectionPage] Already on ${ssid}, connecting directly`);
+        this.connectingSSID = ssid;
+        await this.deviceService.connect(WIFI_CONFIG.targetIp, WIFI_CONFIG.targetPort);
+        return; // navigation handled by connectionState$ subscription
+      }
+    } catch {
+      // getSsid can fail if location permission not granted yet — fall through to scanner
+    }
+    await this.scanWifiNetworks();
+  }
+
+  async scanWifiNetworks() {
+    this.isScanning = true;
+    this.wifiNetworks = [];
+    try {
+      // Request location permission — required for WiFi scanning on Android 6+
+      const status = await CapacitorWifi.requestPermissions();
+      if (status.location === 'denied') {
+        this.showError('Location permission is required to scan WiFi networks. Please grant it in Settings.');
+        this.isScanning = false;
+        return;
+      }
+
+      const { networks } = await CapacitorWifi.getAvailableNetworks();
+      // Deduplicate by SSID and sort: target SSIDs first, then by signal strength
+      const seen = new Set<string>();
+      const parsed: WifiNetwork[] = [];
+      for (const n of networks) {
+        if (!n.ssid || seen.has(n.ssid)) continue;
+        seen.add(n.ssid);
+        parsed.push({
+          ssid: n.ssid,
+          rssi: n.rssi,
+          isTarget: n.ssid.startsWith(WIFI_CONFIG.targetSsidPrefix),
+        });
+      }
+      parsed.sort((a, b) => {
+        if (a.isTarget !== b.isTarget) return a.isTarget ? -1 : 1;
+        return b.rssi - a.rssi;
+      });
+      this.wifiNetworks = parsed;
+    } catch (error: any) {
+      console.error('[BleConnectionPage] WiFi scan failed:', error);
+      this.showError('Failed to scan WiFi networks. Make sure Location permission is granted.');
+    } finally {
+      this.isScanning = false;
+    }
+  }
+
+  async connectToWifi(network: WifiNetwork) {
+    this.connectingSSID = network.ssid;
+    try {
+      // Join the WiFi network (autoRouteTraffic = true binds app traffic to this network)
+      await CapacitorWifi.connect({
+        ssid: network.ssid,
+        autoRouteTraffic: true,
+      } as any);
+
+      console.log(`[BleConnectionPage] Joined WiFi: ${network.ssid}`);
+
+      // Now open UDP connection to the target at the configured IP
+      await this.deviceService.connect(WIFI_CONFIG.targetIp, WIFI_CONFIG.targetPort);
+    } catch (error: any) {
+      console.error('[BleConnectionPage] WiFi connect failed:', error);
+      this.showError(`Could not connect to ${network.ssid}: ${error?.message ?? 'unknown error'}`);
+      this.connectingSSID = null;
+    }
+    // Navigation triggered by connectionState$ on CONNECTED
+  }
+
+  getSignalBars(rssi: number): number {
+    // Convert dBm to 1–4 bars
+    if (rssi >= -55) return 4;
+    if (rssi >= -67) return 3;
+    if (rssi >= -75) return 2;
+    return 1;
+  }
+
+  // ── BLE ─────────────────────────────────────────────────────────────────────
+
   async initializeBLE() {
     try {
-      // Initialize BLE first (required before any BLE operations)
-      await this.bleService.initialize();
+      await this.deviceService.bleOnly.initialize();
       this.isInitialized = true;
-      console.log('BLE initialized successfully');
 
-      // Check if BLE is enabled
-      const isEnabled = await this.bleService.isBLEEnabled();
-
+      const isEnabled = await this.deviceService.bleOnly.isBLEEnabled();
       if (!isEnabled) {
         const alert = await this.alertController.create({
           header: 'Bluetooth Disabled',
-          message:
-            'Bluetooth is required to connect to ADL Monitor targets. Would you like to enable it?',
+          message: 'Bluetooth is required to connect to ADL Monitor targets. Would you like to enable it?',
           buttons: [
-            {
-              text: 'Cancel',
-              role: 'cancel',
-              handler: () => {
-                this.goBack();
-              },
-            },
+            { text: 'Cancel', role: 'cancel', handler: () => this.goBack() },
             {
               text: 'Enable',
               handler: async () => {
                 try {
-                  await this.bleService.requestBLEEnable();
-                  // Check again if enabled after request
-                  const nowEnabled = await this.bleService.isBLEEnabled();
-                  if (!nowEnabled) {
-                    this.showError('Bluetooth must be enabled to continue.');
-                    this.goBack();
-                  }
-                } catch (error) {
-                  console.error('User denied BLE enable:', error);
-                  this.goBack();
-                }
+                  await this.deviceService.bleOnly.requestBLEEnable();
+                  const nowEnabled = await this.deviceService.bleOnly.isBLEEnabled();
+                  if (!nowEnabled) { this.showError('Bluetooth must be enabled to continue.'); this.goBack(); }
+                } catch { this.goBack(); }
               },
             },
           ],
         });
         await alert.present();
-        return;
       }
     } catch (error) {
       console.error('Failed to initialize BLE:', error);
-      this.showError(
-        'Failed to initialize Bluetooth. Please check permissions.'
-      );
+      this.showError('Failed to initialize Bluetooth. Please check permissions.');
     }
   }
 
-  /**
-   * Subscribe to BLE service updates
-   */
-  private subscribeToUpdates() {
-    // Connection state
-    this.connectionStateSubscription =
-      this.bleService.connectionState$.subscribe((state) => {
-        this.connectionState = state;
-
-        // If connected, navigate to drill prepare
-        if (state === BLEConnectionState.CONNECTED) {
-          this.onConnectionSuccess();
-        }
-      });
-
-    // Errors
-    this.errorSubscription = this.bleService.error$.subscribe((error) => {
-      this.showError(error);
-      this.connectingDeviceId = null;
-    });
-  }
-
-  /**
-   * Unsubscribe from all observables
-   */
-  private unsubscribeAll() {
-    this.connectionStateSubscription?.unsubscribe();
-    this.errorSubscription?.unsubscribe();
-  }
-
-  /**
-   * Scan for ADL Monitor devices
-   */
   async scanForDevices() {
-    if (!this.isInitialized) {
-      await this.initializeBLE();
-    }
-
-    if (!this.isInitialized) {
-      return;
-    }
+    if (!this.isInitialized) await this.initializeBLE();
+    if (!this.isInitialized) return;
 
     try {
       this.isScanning = true;
       this.devices = [];
-
-      console.log('Scanning for ADL Monitor devices...');
-      const foundDevices = await this.bleService.scanForDevices(10000);
-
+      const foundDevices = await this.deviceService.bleOnly.scanForDevices(10000);
       this.devices = foundDevices;
-      console.log(`Found ${foundDevices.length} devices`);
-
       if (foundDevices.length === 0) {
-        this.showError(
-          'No ADL Monitor targets found. Make sure the target is powered on and nearby.'
-        );
+        this.showError('No ADL Monitor targets found. Make sure the target is powered on and nearby.');
       }
-    } catch (error) {
-      console.error('Scan failed:', error);
+    } catch {
       this.showError('Failed to scan for targets. Please try again.');
     } finally {
       this.isScanning = false;
     }
   }
 
-  /**
-   * Connect to a device
-   */
   async connectToDevice(device: BleDevice) {
     try {
       this.connectingDeviceId = device.deviceId;
-      console.log('Connecting to device:', device.name);
-      await this.bleService.connect(device);
-      console.log('Connected successfully');
-    } catch (error) {
-      console.error('Connection failed:', error);
+      await this.deviceService.connect(device);
+    } catch {
       this.showError('Failed to connect to target. Please try again.');
       this.connectingDeviceId = null;
     }
   }
 
-  /**
-   * Handle successful connection
-   */
-  private onConnectionSuccess() {
-    // Store that we've connected (for future sessions)
-    localStorage.setItem('bleConnected', 'true');
+  // ── Shared ──────────────────────────────────────────────────────────────────
 
-    // Navigate to drill prepare page
-    setTimeout(() => {
-      this.router.navigate(['/drill/prepare']);
-    }, 500);
+  private subscribeToUpdates() {
+    this.connectionStateSubscription = this.deviceService.connectionState$.subscribe((state) => {
+      this.connectionState = state;
+      if (state === BLEConnectionState.CONNECTED) {
+        this.onConnectionSuccess();
+      }
+      if (state !== BLEConnectionState.CONNECTING) {
+        this.connectingSSID = null;
+      }
+    });
+
+    this.errorSubscription = this.deviceService.error$.subscribe((error) => {
+      this.showError(error);
+      this.connectingDeviceId = null;
+      this.connectingSSID = null;
+    });
   }
 
-  /**
-   * Get device signal strength display
-   */
-  getDeviceSignalStrength(device: BleDevice): string {
-    // You can enhance this with actual RSSI values if available
+  private onConnectionSuccess() {
+    localStorage.setItem('bleConnected', 'true');
+    setTimeout(() => this.router.navigate(['/drill/prepare']), 500);
+  }
+
+  get isConnecting(): boolean {
+    return this.connectingDeviceId !== null || this.connectingSSID !== null;
+  }
+
+  getDeviceSignalStrength(_device: BleDevice): string {
     return 'Signal: Strong';
   }
 
-  /**
-   * Check if currently connecting
-   */
-  get isConnecting(): boolean {
-    return this.connectingDeviceId !== null;
-  }
-
-  /**
-   * Go back to previous page
-   */
   goBack() {
     this.router.navigate([this.returnUrl]);
   }
 
-  /**
-   * Show error alert
-   */
+  onDemoClicked() {
+    this.router.navigate(['/drill/prepare']);
+  }
+
   private async showError(message: string) {
     const alert = await this.alertController.create({
       header: 'Error',
-      message: message,
+      message,
       buttons: ['OK'],
     });
     await alert.present();
-  }
-
-  onDemoClicked() {
-    // Navigate to drill prepare page in demo mode
-    // The drill setup is already stored in DrillService from the previous page (training or challenge)
-    // We just need to navigate to the prepare screen which will use that setup
-    console.log('Demo mode activated - proceeding with existing drill setup');
-    this.router.navigate(['/drill/prepare']);
   }
 }

@@ -75,18 +75,10 @@
         <p class="tip-text">{{ currentTip }}</p>
       </div>
 
-      <!-- BLE Connection Button (only show if not connected) -->
-      @if(!isBleConnected){
-      <button class="ble-connection-btn" (click)="openBLEConnection()">
-        <ion-icon name="bluetooth-outline"></ion-icon>
-        CONNECT ADL MONITOR
-      </button>
-      } @else {
+      <!-- Start Drill Button -->
       <button class="start-drill-btn" (click)="startDrill()">
         START DRILL
       </button>
-      }
-      <!-- Start Drill Button -->
     </div>
   </div>
 </ion-content>

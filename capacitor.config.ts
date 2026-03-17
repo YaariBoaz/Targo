@@ -2,12 +2,12 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.adl.targo',
-  appName: 'targo-app',
+  appName: 'Targo',
   webDir: 'www',
   plugins: {
     SplashScreen: {
       launchShowDuration: 0,
-      launchAutoHide: true,
+      launchAutoHide: false,
       backgroundColor: '#000000',
       showSpinner: false,
       androidScaleType: 'FIT_XY',

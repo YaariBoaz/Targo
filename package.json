@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
   "name": "targo-app",
-=======
-  "name": "Targo",
->>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
   "version": "0.0.1",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
@@ -14,8 +10,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-<<<<<<< HEAD
-    "android": "ionic cap run android --external --livereload",
+    "android": "ionic cap run android --external --livereload --target RFCWC1BYDHM",
     "android:build": "ng build && npx cap sync android && npx cap run android --target RFCWC1BYDHM"
   },
   "private": true,
@@ -38,61 +33,27 @@
     "@capacitor/haptics": "^7.0.2",
     "@capacitor/ios": "^7.4.3",
     "@capacitor/keyboard": "7.0.3",
+    "@capacitor/preferences": "^8.0.0",
     "@capacitor/share": "^7.0.2",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
+    "@capgo/capacitor-wifi": "^8.1.9",
     "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
+    "@frontall/capacitor-udp": "^0.3.4",
     "@ionic/angular": "^8.7.9",
     "@revenuecat/purchases-capacitor": "^11.2.15",
     "@revenuecat/purchases-capacitor-ui": "^11.2.15",
+    "capacitor-udp-socket": "^7.0.0",
     "chart.js": "^4.5.1",
     "firebase": "^12.6.0",
     "html2canvas": "^1.4.1",
     "ionicons": "^7.0.0",
-=======
-    "android": "ionic capacitor run android -l --external"
-  },
-  "private": true,
-  "dependencies": {
-    "@angular/animations": "^19.0.0",
-    "@angular/cdk": "^19.2.18",
-    "@angular/common": "^19.0.0",
-    "@angular/compiler": "^19.0.0",
-    "@angular/core": "^19.0.0",
-    "@angular/forms": "^19.0.0",
-    "@angular/material": "^19.2.18",
-    "@angular/platform-browser": "^19.0.0",
-    "@angular/platform-browser-dynamic": "^19.0.0",
-    "@angular/router": "^19.0.0",
-    "@capacitor-firebase/authentication": "^7.3.0",
-    "@capacitor/android": "7.2.0",
-    "@capacitor/app": "^7.0.1",
-    "@capacitor/camera": "^7.0.1",
-    "@capacitor/core": "7.2.0",
-    "@capacitor/haptics": "7.0.1",
-    "@capacitor/keyboard": "7.0.1",
-    "@capacitor/status-bar": "7.0.1",
-    "@capawesome/capacitor-android-edge-to-edge-support": "^7.2.2",
-    "@capgo/capacitor-navigation-bar": "^7.1.18",
-    "@hugotomazi/capacitor-navigation-bar": "^4.0.1",
-    "@ionic/angular": "^8.0.0",
-    "@swimlane/ngx-charts": "^22.0.0",
-    "chart.js": "^4.5.0",
-    "d3": "^7.9.0",
-    "d3-shape": "^3.2.0",
-    "firebase": "^12.0.0",
-    "hammerjs": "^2.0.8",
-    "ionicons": "^7.0.0",
-    "lucide": "^0.523.0",
-    "lucide-angular": "^0.523.0",
->>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
     "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-<<<<<<< HEAD
     "@angular-devkit/build-angular": "^20.3.10",
     "@angular-eslint/builder": "^20.0.0",
     "@angular-eslint/eslint-plugin": "^20.0.0",
@@ -106,25 +67,6 @@
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.4",
     "@ionic/angular-toolkit": "^12.0.0",
-=======
-    "@angular-devkit/build-angular": "^19.0.0",
-    "@angular-eslint/builder": "^19.0.0",
-    "@angular-eslint/eslint-plugin": "^19.0.0",
-    "@angular-eslint/eslint-plugin-template": "^19.0.0",
-    "@angular-eslint/schematics": "^19.0.0",
-    "@angular-eslint/template-parser": "^19.0.0",
-    "@angular/cli": "^19.0.0",
-    "@angular/compiler-cli": "^19.0.0",
-    "@angular/language-service": "^19.0.0",
-    "@capacitor/cli": "7.2.0",
-    "@ionic/angular-toolkit": "^12.0.0",
-    "@types/d3-array": "^3.2.1",
-    "@types/d3-color": "^3.1.3",
-    "@types/d3-scale": "^4.0.9",
-    "@types/d3-selection": "^3.0.11",
-    "@types/d3-shape": "^3.1.7",
-    "@types/hammerjs": "^2.0.46",
->>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
     "@types/jasmine": "~5.1.0",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
@@ -139,12 +81,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-<<<<<<< HEAD
     "tsx": "^4.20.6",
     "typescript": "~5.8.0"
-=======
-    "typescript": "~5.6.3"
->>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
   },
   "description": "An Ionic project"
 }
