@@ -1,4 +1,4 @@
-@use '../../../../../theme/mixins.scss' as *;
+@use "../../../../../theme/mixins.scss" as *;
 
 .settings-modal {
   position: fixed;
@@ -193,7 +193,7 @@
 .menu-label {
   font-size: 1rem;
   font-weight: 500;
-  color: #FFD700; // Gold color matching the design
+  color: #f6ba16; // Gold color matching the design
 }
 
 .menu-arrow {

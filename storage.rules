@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Profile photos - only authenticated users can upload their own photos
+    match /profile-photos/{fileName} {
+      // Allow anyone to read profile photos
+      allow read: if true;
+
+      // Allow write only if user is authenticated and the filename starts with their UID
+      allow write: if request.auth != null &&
+                      fileName.matches(request.auth.uid + '_.*\\.jpg');
+    }
+
+    // Default: deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

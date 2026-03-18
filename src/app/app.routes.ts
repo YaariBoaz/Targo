@@ -15,6 +15,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'onboarding',
+    loadComponent: () =>
+      import('./features/onboarding/onboarding.page').then(
+        (m) => m.OnboardingPage
+      ),
+  },
+  {
     path: 'tabs',
     loadComponent: () =>
       import('./tabs/tabs.component').then((m) => m.TabsPage),
@@ -139,6 +146,54 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'invite-players',
+    loadComponent: () =>
+      import('./features/multiplayer/pages/invite-players/invite-players.page').then(
+        (m) => m.InvitePlayersPage
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'multiplayer-lobby',
+    loadComponent: () =>
+      import('./features/multiplayer/pages/lobby/lobby.page').then(
+        (m) => m.LobbyPage
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'friends',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'list',
+        loadComponent: () =>
+          import('./features/friends/pages/friends-list/friends-list.page').then(
+            (m) => m.FriendsListPage
+          ),
+      },
+      {
+        path: 'add',
+        loadComponent: () =>
+          import('./features/friends/pages/add-friends/add-friends.page').then(
+            (m) => m.AddFriendsPage
+          ),
+      },
+      {
+        path: 'requests',
+        loadComponent: () =>
+          import('./features/friends/pages/friend-requests/friend-requests.page').then(
+            (m) => m.FriendRequestsPage
+          ),
+      },
+      {
+        path: '',
+        redirectTo: 'list',
+        pathMatch: 'full',
+      },
+    ],
+  },
+  {
     path: 'auth',
     children: [
       {
@@ -160,6 +215,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/auth/pages/register/register.page').then(
             (m) => m.RegisterPage
+          ),
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./features/auth/pages/forgot-password/forgot-password.page').then(
+            (m) => m.ForgotPasswordPage
           ),
       },
       {

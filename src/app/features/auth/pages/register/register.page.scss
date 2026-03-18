@@ -1,4 +1,4 @@
-@use '../../../../../theme/mixins.scss' as *;
+@use "../../../../../theme/mixins.scss" as *;
 
 // Outer wrapper - Fixed, full viewport
 .register-page {
@@ -19,7 +19,7 @@
   left: 0;
   right: 0;
   bottom: var(--safe-area-bottom); // Stop before bottom safe area
-  background: url('/assets/bg/soldiers.png') center center / cover no-repeat;
+  background: url("/assets/bg/soldiers.png") center center / cover no-repeat;
   z-index: 1;
   pointer-events: none; // Allow scrolling through the background
 }
@@ -62,7 +62,9 @@
 // Scroll container - Photo upload and form scroll below the fixed header
 .register-scroll-container {
   position: fixed;
-  top: calc(var(--spacing-lg) + var(--safe-area-top) + 80px); // Start below header
+  top: calc(
+    var(--spacing-lg) + var(--safe-area-top) + 80px
+  ); // Start below header
   left: 0;
   right: 0;
   bottom: var(--safe-area-bottom); // Stop before bottom safe area
@@ -192,7 +194,7 @@
   padding: 0 var(--spacing-md);
   color: var(--brand-white);
   font-size: 1rem;
-  font-family: 'Lexend', sans-serif;
+  font-family: "Lexend", sans-serif;
 
   &:focus {
     outline: none;
@@ -258,7 +260,7 @@
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Lexend', sans-serif;
+  font-family: "Lexend", sans-serif;
 
   &:active {
     opacity: 0.8;
@@ -304,5 +306,49 @@
     --background: rgba(255, 255, 255, 0.2);
     --color: rgba(255, 255, 255, 0.4);
     opacity: 1;
+  }
+}
+
+// Location Select Dropdown
+.location-select {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  height: 50px;
+  --background: transparent;
+  --border-color: rgba(255, 255, 255, 0.2);
+  --border-radius: 4px;
+  --border-style: solid;
+  --border-width: 1px;
+  --padding-start: var(--spacing-md);
+  --padding-end: var(--spacing-md);
+  --placeholder-color: rgba(255, 255, 255, 0.3);
+  --placeholder-opacity: 1;
+  color: var(--brand-white);
+  font-size: 1rem;
+  font-family: "Lexend", sans-serif;
+
+  &::part(icon) {
+    color: rgba(255, 255, 255, 0.5);
+    margin-inline-start: 8px;
+  }
+
+  &::part(placeholder) {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.9rem;
+  }
+
+  &::part(text) {
+    color: var(--brand-white);
+  }
+
+  // When focused/active
+  &.select-expanded {
+    --border-color: var(--brand-gold);
+  }
+
+  // When disabled (loading)
+  &[disabled] {
+    opacity: 0.5;
+    --placeholder-color: rgba(255, 255, 255, 0.2);
   }
 }

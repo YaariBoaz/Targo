@@ -12,59 +12,157 @@
     <p class="challenge-subtitle">{{ challengeSubtitle }}</p>
   </div>
 
-  <!-- Scrollable Drills List -->
+  <!-- Tab Switcher -->
+  <div class="tab-switcher">
+    <button class="tab-btn" [class.active]="activeTab === 'drills'" (click)="switchTab('drills')">DRILLS</button>
+    <button class="tab-btn" [class.active]="activeTab === 'leaderboard'" (click)="switchTab('leaderboard')">LEADERBOARD</button>
+  </div>
+
+  <!-- Scrollable Content -->
   <div class="drills-scroll-container">
     <div class="drills-content">
-      <div class="drills-list">
-        @for (drill of drills; track drill.id) {
-          <div class="drill-card"
-               [class.locked]="drill.status === 'locked'"
-               [class.completed]="drill.status === 'completed'"
-               (click)="onDrillClick(drill)">
-            <div class="drill-image">
-              <img [src]="drill.imageUrl" [alt]="drill.title" />
 
-              @if (drill.status === 'locked') {
-                <div class="locked-overlay">
-                  <ion-icon name="lock-closed"></ion-icon>
-                </div>
-              }
+      <!-- Drills Tab -->
+      @if (activeTab === 'drills') {
+        <div class="drills-list">
+          @for (drill of drills; track drill.id) {
+            <div class="drill-card"
+                 [class.locked]="drill.status === 'locked'"
+                 [class.completed]="drill.status === 'completed'"
+                 (click)="onDrillClick(drill)">
+              <div class="drill-image">
+                <img [src]="drill.imageUrl" [alt]="drill.title" />
 
-              @if (drill.status === 'completed' && drill.stars) {
-                <div class="stars-overlay">
-                  @for (star of [1, 2, 3]; track star) {
-                    <ion-icon
-                      name="{{ star <= drill.stars! ? 'star' : 'star-outline' }}"
-                      [class.filled]="star <= drill.stars!">
-                    </ion-icon>
+                @if (drill.status === 'locked') {
+                  <div class="locked-overlay">
+                    <ion-icon name="lock-closed"></ion-icon>
+                  </div>
+                }
+
+                @if (drill.status === 'completed' && drill.stars) {
+                  <div class="stars-overlay">
+                    @for (star of [1, 2, 3]; track star) {
+                      <ion-icon
+                        name="{{ star <= drill.stars! ? 'star' : 'star-outline' }}"
+                        [class.filled]="star <= drill.stars!">
+                      </ion-icon>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="drill-details">
+                <h3 class="drill-title">{{ drill.title }}</h3>
+                <p class="drill-description">{{ drill.description }}</p>
+
+                @if (drill.status === 'completed') {
+                  <div class="drill-score">Score: <span class="score-value">{{ drill.score }}</span></div>
+                }
+
+                <button class="drill-btn"
+                        [class.locked]="drill.status === 'locked'"
+                        [class.completed]="drill.status === 'completed'">
+                  @if (drill.status === 'locked') {
+                    LOCKED
+                  } @else if (drill.status === 'completed') {
+                    REPLAY
+                  } @else {
+                    LET'S GO
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Leaderboard Tab -->
+      @if (activeTab === 'leaderboard') {
+        @if (leaderboardLoading) {
+          <div class="lb-loading">
+            <div class="spinner"></div>
+          </div>
+        } @else if (leaderboard.length === 0) {
+          <div class="lb-empty">
+            <p>No scores yet. Be the first!</p>
+          </div>
+        } @else {
+          <!-- Top 3 Podium -->
+          <div class="podium">
+            <!-- 2nd place -->
+            @if (leaderboard.length >= 2) {
+              <div class="podium-item silver">
+                <div class="podium-avatar" [class.is-me]="leaderboard[1].uid === currentUserId">
+                  @if (leaderboard[1].photoURL) {
+                    <img [src]="leaderboard[1].photoURL" alt="avatar" />
+                  } @else {
+                    <span>{{ getInitials(leaderboard[1].displayName) }}</span>
                   }
                 </div>
-              }
-            </div>
+                <div class="podium-rank silver-rank">2</div>
+                <div class="podium-name">{{ leaderboard[1].displayName.split(' ')[0] }}</div>
+                <div class="podium-score">{{ leaderboard[1].totalScore }}</div>
+              </div>
+            } @else {
+              <div class="podium-item silver empty"></div>
+            }
 
-            <div class="drill-details">
-              <h3 class="drill-title">{{ drill.title }}</h3>
-              <p class="drill-description">{{ drill.description }}</p>
-
-              @if (drill.status === 'completed') {
-                <div class="drill-score">Score: <span class="score-value">{{ drill.score }}</span></div>
-              }
-
-              <button class="drill-btn"
-                      [class.locked]="drill.status === 'locked'"
-                      [class.completed]="drill.status === 'completed'">
-                @if (drill.status === 'locked') {
-                  LOCKED
-                } @else if (drill.status === 'completed') {
-                  REPLAY
+            <!-- 1st place -->
+            <div class="podium-item gold">
+              <div class="podium-crown">&#9733;</div>
+              <div class="podium-avatar large" [class.is-me]="leaderboard[0].uid === currentUserId">
+                @if (leaderboard[0].photoURL) {
+                  <img [src]="leaderboard[0].photoURL" alt="avatar" />
                 } @else {
-                  LET'S GO
+                  <span>{{ getInitials(leaderboard[0].displayName) }}</span>
                 }
-              </button>
+              </div>
+              <div class="podium-rank gold-rank">1</div>
+              <div class="podium-name">{{ leaderboard[0].displayName.split(' ')[0] }}</div>
+              <div class="podium-score">{{ leaderboard[0].totalScore }}</div>
             </div>
+
+            <!-- 3rd place -->
+            @if (leaderboard.length >= 3) {
+              <div class="podium-item bronze">
+                <div class="podium-avatar" [class.is-me]="leaderboard[2].uid === currentUserId">
+                  @if (leaderboard[2].photoURL) {
+                    <img [src]="leaderboard[2].photoURL" alt="avatar" />
+                  } @else {
+                    <span>{{ getInitials(leaderboard[2].displayName) }}</span>
+                  }
+                </div>
+                <div class="podium-rank bronze-rank">3</div>
+                <div class="podium-name">{{ leaderboard[2].displayName.split(' ')[0] }}</div>
+                <div class="podium-score">{{ leaderboard[2].totalScore }}</div>
+              </div>
+            } @else {
+              <div class="podium-item bronze empty"></div>
+            }
+          </div>
+
+          <!-- Rest of leaderboard -->
+          <div class="lb-list">
+            @for (entry of leaderboard; track entry.uid; let i = $index) {
+              @if (i >= 3) {
+                <div class="lb-row" [class.is-me]="entry.uid === currentUserId">
+                  <div class="lb-rank">{{ i + 1 }}</div>
+                  <div class="lb-avatar" [class.is-me]="entry.uid === currentUserId">
+                    @if (entry.photoURL) {
+                      <img [src]="entry.photoURL" alt="avatar" />
+                    } @else {
+                      <span>{{ getInitials(entry.displayName) }}</span>
+                    }
+                  </div>
+                  <div class="lb-name">{{ entry.displayName }}</div>
+                  <div class="lb-score">{{ entry.totalScore }}</div>
+                </div>
+              }
+            }
           </div>
         }
-      </div>
+      }
+
     </div>
   </div>
 </div>

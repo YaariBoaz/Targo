@@ -1,0 +1,102 @@
+<div class="history-page">
+  <!-- Filter Buttons -->
+  <div class="history-filters">
+    <button
+      class="filter-btn"
+      [class.active]="historyFilter === 'training'"
+      (click)="setHistoryFilter('training')"
+    >
+      Training
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="historyFilter === 'challenges'"
+      (click)="setHistoryFilter('challenges')"
+    >
+      Challenges
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading history...</p>
+  </div>
+
+  <!-- Session Cards -->
+  <div class="session-list" *ngIf="!loading">
+    <div
+      class="session-card"
+      *ngFor="let session of filteredSessions; let i = index"
+      [class.expanded]="expandedSessionIndex === i"
+    >
+      <!-- Card Header -->
+      <div class="session-header" (click)="toggleSession(i)">
+        <div class="session-date">{{ formatDate(session.completedAt) }}</div>
+        <div class="session-title">
+          <span class="weapon-name">{{ session.drillSetup.weaponName }}</span>
+          <span class="distance"> - {{ session.drillSetup.distance }}m</span>
+          <span class="completion-rate"> {{ getCompletionRate(session) }}%</span>
+        </div>
+        <div class="session-summary">
+          <span>Bullets: {{ session.drillSetup.numberOfBullets }}</span>
+          <span class="separator">|</span>
+          <span>Hits: {{ session.shots.length }}</span>
+        </div>
+        <ion-icon
+          [name]="expandedSessionIndex === i ? 'chevron-up' : 'chevron-down'"
+          class="expand-icon"
+        ></ion-icon>
+      </div>
+
+      <!-- Expanded Content -->
+      <div class="session-details" *ngIf="expandedSessionIndex === i">
+        <div class="session-stats-row">
+          <div class="stat-item">
+            <div class="stat-label">ACCURACY:</div>
+            <div class="stat-value blue">
+              {{ session.statistics.avgDistance.toFixed(1) }}%
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">AVG. SPLIT:</div>
+            <div class="stat-value orange">
+              {{ session.statistics.avgSplitTime.toFixed(2) }}s
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">HIT RATIO:</div>
+            <div class="stat-value blue">
+              {{ session.shots.length }}/{{ session.drillSetup.numberOfBullets }}
+            </div>
+          </div>
+        </div>
+
+        <div class="session-target-wrapper">
+          <div class="session-target-container">
+            <img
+              src="/assets/targets/target-big.png"
+              alt="Target"
+              class="target-image"
+            />
+            <div
+              class="hit-marker"
+              *ngFor="let shot of session.shots; let j = index"
+              [style.left.%]="getShotPositionX(shot)"
+              [style.top.%]="getShotPositionY(shot)"
+            >{{ j + 1 }}</div>
+          </div>
+        </div>
+
+        <div class="share-icon-container" (click)="shareSession(session, i)">
+          <img src="/assets/icons/share.png" alt="Share" class="share-icon" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-history" *ngIf="!loading && filteredSessions.length === 0">
+    <p>No {{ historyFilter }} sessions found</p>
+  </div>
+</div>

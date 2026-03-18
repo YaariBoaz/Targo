@@ -1,5 +1,4 @@
 export const environment = {
-<<<<<<< HEAD
   production: true,
   firebase: {
     apiKey: 'AIzaSyCWCyHlbBwSzXnJ_7IpFJ2xLcZ--7v8S8Y',
@@ -11,7 +10,4 @@ export const environment = {
   },
   // RevenueCat API Keys for In-App Purchases
   revenueCatApiKey: 'YOUR_REVENUECAT_PRODUCTION_API_KEY_HERE', // Android production key
-=======
-  production: true
->>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
 };

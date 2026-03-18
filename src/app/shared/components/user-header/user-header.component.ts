@@ -6,6 +6,8 @@ import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
 import { AuthService } from '@core/services/auth';
 import { FirestoreService } from '@core/services/firestore';
+import { StatisticsService } from '@core/services/statistics.service';
+import { UserProfile } from '@models/user.model';
 
 @Component({
   selector: 'app-user-header',
@@ -17,11 +19,12 @@ import { FirestoreService } from '@core/services/firestore';
 export class UserHeaderComponent implements OnInit {
   private authService = inject(AuthService);
   private firestoreService = inject(FirestoreService);
+  private statisticsService = inject(StatisticsService);
 
   @Input() userName: string = 'John M.';
   @Input() avatarUrl: string | null = null;
-  @Input() score: number = 64;
-  @Input() rank: number = 4;
+  score: number = 0; // Will be loaded from StatisticsService
+  rank: number = 0; // Will be loaded from StatisticsService
 
   constructor(private router: Router) {
     addIcons({ 'settings-outline': settingsOutline });
@@ -52,7 +55,7 @@ export class UserHeaderComponent implements OnInit {
 
     // Try to load additional profile data from Firestore
     try {
-      const firestoreUser = await this.firestoreService.getUser(user.uid);
+      const firestoreUser = await this.firestoreService.getUser(user.uid) as UserProfile | null;
       console.log('User header - Firestore user data:', firestoreUser);
 
       if (firestoreUser) {
@@ -64,14 +67,25 @@ export class UserHeaderComponent implements OnInit {
           this.avatarUrl = firestoreUser.photoURL;
         }
       }
+
+      // Load score and rank from StatisticsService (same source as statistics section)
+      const stats = await this.statisticsService.getUserStatistics(user.uid);
+      this.score = stats.ratingPoints;
+      this.rank = stats.globalRank;
+      console.log('User header - Statistics data:', {
+        score: this.score,
+        rank: this.rank
+      });
     } catch (error) {
-      console.error('User header - Error loading Firestore profile:', error);
+      console.error('User header - Error loading profile data:', error);
       // Continue with Firebase Auth data only
     }
 
     console.log('User header - Final profile data:', {
       userName: this.userName,
-      avatarUrl: this.avatarUrl
+      avatarUrl: this.avatarUrl,
+      score: this.score,
+      rank: this.rank
     });
   }
 

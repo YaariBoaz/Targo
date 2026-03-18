@@ -1,0 +1,53 @@
+<ion-content class="onboarding-content">
+  <div class="onboarding-container">
+    <!-- Skip Button -->
+    <div class="skip-button-container">
+      <button class="skip-btn" (click)="skip()" *ngIf="!isLastSlide">
+        Skip
+      </button>
+    </div>
+
+    <!-- Swiper Slides -->
+    <swiper-container
+      #swiper
+      [pagination]="true"
+      [loop]="false"
+      (slidechange)="onSlideChange($event)"
+    >
+      <swiper-slide *ngFor="let slide of slides">
+        <div class="slide-content">
+          <div class="slide-icon">{{ slide.image }}</div>
+          <h1 class="slide-title">{{ slide.title }}</h1>
+          <p class="slide-description">{{ slide.description }}</p>
+        </div>
+      </swiper-slide>
+    </swiper-container>
+
+    <!-- Navigation Buttons -->
+    <div class="navigation-buttons">
+      <button
+        class="nav-btn secondary"
+        (click)="previousSlide()"
+        *ngIf="currentSlideIndex > 0"
+      >
+        Back
+      </button>
+
+      <button
+        class="nav-btn primary"
+        (click)="nextSlide()"
+        *ngIf="!isLastSlide"
+      >
+        Next
+      </button>
+
+      <button
+        class="nav-btn primary get-started"
+        (click)="getStarted()"
+        *ngIf="isLastSlide"
+      >
+        Get Started
+      </button>
+    </div>
+  </div>
+</ion-content>

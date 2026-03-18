@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonContent, IonButton, IonIcon } from '@ionic/angular/standalone';
 import { NavigationService } from '@core/services/navigation.service';
+import { OnboardingService } from '@core/services/onboarding.service';
 import { addIcons } from 'ionicons';
 import { chevronBackOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
 
@@ -15,6 +16,8 @@ import { chevronBackOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
 export class LoginPage {
   loginForm: FormGroup;
   showPassword = false;
+
+  private onboardingService = inject(OnboardingService);
 
   constructor(
     private fb: FormBuilder,
@@ -38,12 +41,21 @@ export class LoginPage {
     this.showPassword = !this.showPassword;
   }
 
-  onLogin() {
+  async onLogin() {
     if (this.loginForm.valid) {
       console.log('Login:', this.loginForm.value);
       // TODO: Implement Firebase authentication
-      // For now, navigate to home
+      // For now, navigate to home after checking onboarding
+      await this.checkOnboardingAndRedirect();
+    }
+  }
+
+  private async checkOnboardingAndRedirect() {
+    const hasSeenOnboarding = await this.onboardingService.hasSeenOnboarding();
+    if (hasSeenOnboarding) {
       this.navigationService.navigateRoot('/tabs/home');
+    } else {
+      this.navigationService.navigateRoot('/onboarding');
     }
   }
 
@@ -52,15 +64,14 @@ export class LoginPage {
   }
 
   forgotPassword() {
-    console.log('Forgot password clicked');
-    // TODO: Navigate to forgot password page
+    this.navigationService.navigateForward('/auth/forgot-password');
   }
 
   goToRegister() {
     this.navigationService.navigateForward('/auth/register');
   }
 
-  continueAsGuest() {
-    this.navigationService.navigateRoot('/tabs/home');
+  async continueAsGuest() {
+    await this.checkOnboardingAndRedirect();
   }
 }

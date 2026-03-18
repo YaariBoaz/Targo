@@ -1,4 +1,4 @@
-@use '../../../../../theme/mixins.scss' as *;
+@use "../../../../../theme/mixins.scss" as *;
 
 .settings-detail-page {
   position: fixed;
@@ -61,7 +61,9 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-lg) var(--spacing-md);
-  padding-bottom: calc(var(--safe-area-bottom) + var(--spacing-xl) + 60px); // Extra space for save button
+  padding-bottom: calc(
+    var(--safe-area-bottom) + var(--spacing-xl) + 60px
+  ); // Extra space for save button
 }
 
 // Form Section
@@ -118,7 +120,7 @@
 .section-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #FFD700; // Gold color
+  color: #f6ba16; // Gold color
   margin: 0 0 var(--spacing-lg) 0;
   letter-spacing: 0.05em;
   text-transform: capitalize;
@@ -128,7 +130,7 @@
   display: block;
   font-size: 1rem;
   font-weight: 500;
-  color: #FFD700; // Gold color
+  color: #f6ba16; // Gold color
   margin-bottom: var(--spacing-sm);
   text-transform: capitalize;
 }
@@ -177,11 +179,7 @@
 
 // Save Button
 .save-btn {
-  position: fixed;
-  bottom: calc(var(--safe-area-bottom) + var(--spacing-lg));
-  left: var(--spacing-md);
-  right: var(--spacing-md);
-  background: #FFD700;
+  background: #f6ba16;
   color: #000000;
   border: none;
   border-radius: 8px;
@@ -191,9 +189,10 @@
   letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
 
   &:active:not(:disabled) {
-    background: #E5C100;
+    background: #f6ba16;
     transform: scale(0.98);
   }
 

@@ -6,7 +6,25 @@
       <span class="stat-value shots">{{ shots.length }}/{{ totalShots }}</span>
     </div>
 
-    <button class="exit-btn" (click)="exitDrill()">EXIT</button>
+    <div class="stat">
+      <span class="stat-label">STATUS:</span>
+      <span
+        class="stat-value"
+        [class.connected]="isConnected"
+        [class.disconnected]="!isConnected"
+      >
+        {{ isConnected ? 'CONNECTED' : 'DISCONNECTED' }}
+      </span>
+    </div>
+
+    <!-- <button class="exit-btn" (click)="exitDrill()">EXIT</button> -->
+    <button
+      class="stop-finish-btn"
+      [class.finish]="confirmingFinish || shots.length >= totalShots"
+      (click)="handleStopFinish()"
+    >
+      {{ stopButtonText }}
+    </button>
   </div>
 
   <div class="side-stats">
@@ -21,52 +39,181 @@
     </div>
   </div>
 
+  <!-- Current Shooter Info (Multiplayer Spectator Mode) -->
+  @if (isSpectatorMode && multiplayerSession) {
+  <div class="current-shooter-bar">
+    <span class="live-badge">● LIVE</span>
+    <span class="shooter-name">{{ multiplayerSession.currentShooter }}</span>
+    <div class="shooter-stats">
+      <span class="stat-item">Shots: <strong>{{ shots.length }}/{{ totalShots }}</strong></span>
+      <span class="stat-item">Score: <strong>68</strong></span>
+    </div>
+    <span class="timer">{{ formattedTime }}</span>
+  </div>
+  }
+
   <!-- Target -->
   <div class="target-container">
     <div class="target">
       <div class="target-hitbox"></div>
       <!-- Shot markers -->
       @for (shot of shots; track shot.id) {
-        <div class="shot-marker" [style.left.px]="shot.x" [style.top.px]="shot.y">
-          {{ shot.id }}
-        </div>
+      <div class="shot-marker" [style.left.px]="shot.x" [style.top.px]="shot.y">
+        {{ shot.id }}
+      </div>
       }
     </div>
   </div>
 
+  <!-- Quick Actions Bar (Multiplayer Spectator Mode) -->
+  <div class="quick-actions">
+    <button class="quick-emoji-btn" (click)="sendEmoji('🔥')">🔥</button>
+    <button class="quick-emoji-btn" (click)="sendEmoji('👏')">👏</button>
+    <button class="quick-emoji-btn" (click)="sendEmoji('😱')">😱</button>
+    <button class="quick-emoji-btn" (click)="sendEmoji('💯')">💯</button>
+    <button class="quick-bet-btn" (click)="toggleBetting()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      BET
+    </button>
+  </div>
+
+  <!-- Betting Modal (Multiplayer Spectator Mode) -->
+  @if (isSpectatorMode && isBettingExpanded) {
+  <div class="betting-modal">
+    <div class="betting-content">
+      <div class="betting-header">
+        <h3>BET ON NEXT SHOT</h3>
+        <button class="betting-close" (click)="toggleBetting()">✕</button>
+      </div>
+      <div class="betting-grid">
+        <button class="bet-option" (click)="placeBet('bullseye')">
+          <span class="bet-name">BULLSEYE</span>
+          <span class="bet-pts">50 pts</span>
+        </button>
+        <button class="bet-option" (click)="placeBet('inner')">
+          <span class="bet-name">INNER RING</span>
+          <span class="bet-pts">30 pts</span>
+        </button>
+        <button class="bet-option" (click)="placeBet('outer')">
+          <span class="bet-name">OUTER RING</span>
+          <span class="bet-pts">10 pts</span>
+        </button>
+        <button class="bet-option" (click)="placeBet('miss')">
+          <span class="bet-name">MISS</span>
+          <span class="bet-pts">5 pts</span>
+        </button>
+      </div>
+      <p class="next-shooter-info">You're up next...</p>
+    </div>
+  </div>
+  }
+
+  <!-- Chat Toggle Button (Multiplayer Spectator Mode) -->
+  @if (isSpectatorMode) {
+  <button class="chat-toggle-btn" (click)="toggleChat()">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    @if (chatMessages.length > 0) {
+    <span class="chat-badge">{{ chatMessages.length }}</span>
+    }
+  </button>
+  }
+
+  <!-- Chat Window (Multiplayer Spectator Mode) -->
+  @if (isSpectatorMode && isChatExpanded) {
+  <div class="chat-window">
+    <div class="chat-header">
+      <h3>Chat</h3>
+      <button class="chat-close" (click)="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages">
+      @for (msg of chatMessages; track msg.timestamp) {
+      <div class="chat-message">
+        <div class="message-header">
+          <span class="message-user">{{ msg.user }}</span>
+          <span class="message-time">{{ formatChatTime(msg.timestamp) }}</span>
+        </div>
+        <p class="message-text">{{ msg.message }}</p>
+      </div>
+      }
+      @if (chatMessages.length === 0) {
+      <div class="chat-empty">
+        No messages yet. Start the conversation!
+      </div>
+      }
+    </div>
+    <div class="chat-input-container">
+      <input
+        type="text"
+        class="chat-input"
+        placeholder="Type a message..."
+        [(ngModel)]="chatMessage"
+        (keyup.enter)="sendChatMessage()"
+      />
+      <button
+        class="chat-send"
+        [disabled]="!chatMessage.trim()"
+        (click)="sendChatMessage()"
+      >
+        Send
+      </button>
+    </div>
+  </div>
+  }
+
   <!-- Stats Table (Bottom Sheet) -->
   <div class="stats-sheet" [class.expanded]="isStatsExpanded">
     <div class="sheet-handle" (click)="toggleStats()">
-      <svg class="handle-arrow" [class.flipped]="isStatsExpanded" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M18 15L12 9L6 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg
+        class="handle-arrow"
+        [class.flipped]="isStatsExpanded"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <path
+          d="M18 15L12 9L6 15"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
       <h3 class="sheet-title">Shooting session statistics</h3>
     </div>
 
     <div class="sheet-content">
       <div class="stats-header">
-        <div class="header-cell">SHOTS</div>
-        <div class="header-cell">AVG. SPLIT</div>
-        <div class="header-cell">AVG. DIST</div>
-        <div class="header-cell">TOTAL TIME</div>
+        <div class="header-cell">SHOT</div>
+        <div class="header-cell">SCORE</div>
       </div>
 
       <div class="stats-rows">
         @for (stat of sessionStats; track $index) {
-          <div class="stats-row">
-            <div class="stat-cell">{{ stat.shotNumber }}</div>
-            <div class="stat-cell">{{ stat.avgSplitTime.toFixed(2) }}s</div>
-            <div class="stat-cell">{{ stat.avgDistance.toFixed(1) }}cm</div>
-            <div class="stat-cell">{{ formatTime(stat.totalTime) }}</div>
-          </div>
+        <div class="stats-row">
+          <div class="stat-cell">#{{ stat.shotNumber }}</div>
+          <div class="stat-cell">{{ calculateShotScore(stat.avgDistance) }}</div>
+        </div>
         }
       </div>
     </div>
   </div>
 
   <!-- Completion Modal -->
+  @if (showCompletionModal && completionStats && drillSetup) {
   <app-drill-completion-modal
-    *ngIf="showCompletionModal && completionStats && drillSetup"
     [isChallenge]="drillSetup.source === 'challenge'"
     [stats]="completionStats"
     [challengeId]="drillSetup.challengeId"
@@ -74,4 +221,5 @@
     (close)="onModalClose()"
     (startNext)="onStartNextDrill()"
   ></app-drill-completion-modal>
+  }
 </div>

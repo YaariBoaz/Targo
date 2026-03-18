@@ -1,13 +1,12 @@
 {
-<<<<<<< HEAD
-  "typescript.preferences.autoImportFileExcludePatterns": ["@ionic/angular/common", "@ionic/angular"]
-=======
   "typescript.preferences.autoImportFileExcludePatterns": [
     "@ionic/angular/common",
     "@ionic/angular"
   ],
-  "java.configuration.updateBuildConfiguration": "automatic",
-  "genieai.enableConversationHistory": true,
-  "genieai.response.showNotification": true
->>>>>>> e5ece6d90a60c3e35dbc4e11b781a3364886e832
+  "geminicodeassist.agentDebugMode": true,
+  "geminicodeassist.agentYoloMode": true,
+  "geminicodeassist.codeGenerationPaneViewEnabled": true,
+  "editor.fontSize": 26,
+  "editor.fontLigatures": false,
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

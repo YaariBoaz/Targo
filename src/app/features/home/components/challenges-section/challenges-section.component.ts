@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
@@ -8,9 +8,11 @@ import {
 } from '@shared/components/challenge-card/challenge-card.component';
 import { ChallengeService } from '@core/services/challenge.service';
 import { StackNavigationService } from '@core/services/stack-navigation.service';
+import { TabRefreshService } from '@core/services/tab-refresh.service';
 import { Challenge as FirebaseChallenge } from '@models/challenge.model';
 import { ChallengeProgress } from '@models/challenge-progress.model';
 import { ChallengeDrillsPage } from '@features/challenges/pages/challenge-drills/challenge-drills.page';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-challenges-section',
@@ -19,35 +21,48 @@ import { ChallengeDrillsPage } from '@features/challenges/pages/challenge-drills
   templateUrl: './challenges-section.component.html',
   styleUrls: ['./challenges-section.component.scss'],
 })
-export class ChallengesSectionComponent implements OnInit {
+export class ChallengesSectionComponent implements OnInit, OnDestroy {
   private auth = inject(Auth);
   private challengeService = inject(ChallengeService);
   private router = inject(Router);
   private stackNav = inject(StackNavigationService);
+  private tabRefreshService = inject(TabRefreshService);
+  private tabSubscription?: Subscription;
 
   challenges: Challenge[] = [];
   loading = true;
 
   async ngOnInit() {
     await this.loadChallenges();
+
+    // Subscribe to tab changes to reload challenges when home tab is activated
+    this.tabSubscription = this.tabRefreshService.tabChange$.subscribe(async (tabName) => {
+      if (tabName === 'home') {
+        console.log('Challenges section - Home tab activated, refreshing challenges...');
+        await this.loadChallenges();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.tabSubscription?.unsubscribe();
   }
 
   private async loadChallenges() {
     try {
       this.loading = true;
-      const user = this.auth.currentUser;
-      if (!user) return;
 
-      // Fetch user's active challenges (challenges they've started)
-      const userProgress = await this.challengeService.getUserActiveChallenges(
-        user.uid
-      );
-
-      // Fetch all challenges (both global and heroes)
+      // Fetch all challenges — does not require auth
       const [globalChallenges, heroesChallenges] = await Promise.all([
         this.challengeService.getChallengesByType('global'),
         this.challengeService.getChallengesByType('heroes'),
       ]);
+
+      // Fetch user progress only if logged in
+      const user = this.auth.currentUser;
+      const userProgress = user
+        ? await this.challengeService.getUserActiveChallenges(user.uid)
+        : [];
 
       const allChallenges = [...globalChallenges, ...heroesChallenges];
 

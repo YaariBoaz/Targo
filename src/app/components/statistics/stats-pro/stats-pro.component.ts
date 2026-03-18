@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { ProPlanBulletsComponent } from 'src/app/shared/dialogs/pro-plan-bullets/pro-plan-bullets.component';
 import { ProToolsService } from 'src/app/shared/services/pro-tools.service';
 import { BaseChartDirective } from 'ng2-charts';

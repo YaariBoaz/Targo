@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import {
-  Firestore,
   collection,
   doc,
   getDoc,
@@ -13,7 +12,8 @@ import {
   updateDoc,
   increment,
   serverTimestamp,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
+import { FirebaseService } from '@shared/services/firebase.service';
 import { Challenge, ChallengeType } from '@models/challenge.model';
 import { ChallengeDrill } from '@models/challenge-drill.model';
 import { ChallengeProgress, DrillAttempt, AttemptSummary } from '@models/challenge-progress.model';
@@ -22,14 +22,14 @@ import { ChallengeProgress, DrillAttempt, AttemptSummary } from '@models/challen
   providedIn: 'root',
 })
 export class ChallengeService {
-  private firestore = inject(Firestore);
+  private firebase = inject(FirebaseService);
 
   /**
    * Get all challenges by type
    */
   async getChallengesByType(type: ChallengeType): Promise<Challenge[]> {
     try {
-      const challengesCol = collection(this.firestore, 'challenges');
+      const challengesCol = collection(this.firebase.db, 'challenges');
       const q = query(
         challengesCol,
         where('type', '==', type),
@@ -57,7 +57,7 @@ export class ChallengeService {
    */
   async getChallenge(challengeId: string): Promise<Challenge | null> {
     try {
-      const docRef = doc(this.firestore, `challenges/${challengeId}`);
+      const docRef = doc(this.firebase.db, `challenges/${challengeId}`);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) return null;
@@ -79,7 +79,7 @@ export class ChallengeService {
    */
   async getChallengeDrills(challengeId: string): Promise<ChallengeDrill[]> {
     try {
-      const drillsCol = collection(this.firestore, `challenges/${challengeId}/drills`);
+      const drillsCol = collection(this.firebase.db, `challenges/${challengeId}/drills`);
       const q = query(drillsCol, orderBy('order', 'asc'));
 
       const snapshot = await getDocs(q);
@@ -98,7 +98,7 @@ export class ChallengeService {
    */
   async getUserChallengeProgress(userId: string, challengeId: string): Promise<ChallengeProgress | null> {
     try {
-      const docRef = doc(this.firestore, `users/${userId}/challengeProgress/${challengeId}`);
+      const docRef = doc(this.firebase.db, `users/${userId}/challengeProgress/${challengeId}`);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) return null;
@@ -123,7 +123,7 @@ export class ChallengeService {
    */
   async getUserActiveChallenges(userId: string): Promise<ChallengeProgress[]> {
     try {
-      const progressCol = collection(this.firestore, `users/${userId}/challengeProgress`);
+      const progressCol = collection(this.firebase.db, `users/${userId}/challengeProgress`);
       const q = query(progressCol, orderBy('lastActivityAt', 'desc'));
 
       const snapshot = await getDocs(q);
@@ -147,7 +147,7 @@ export class ChallengeService {
    */
   async startChallenge(userId: string, challenge: Challenge): Promise<void> {
     try {
-      const progressRef = doc(this.firestore, `users/${userId}/challengeProgress/${challenge.id}`);
+      const progressRef = doc(this.firebase.db, `users/${userId}/challengeProgress/${challenge.id}`);
 
       const progress = {
         challengeId: challenge.id,
@@ -178,7 +178,7 @@ export class ChallengeService {
   ): Promise<DrillAttempt | null> {
     try {
       const docRef = doc(
-        this.firestore,
+        this.firebase.db,
         `users/${userId}/challengeProgress/${challengeId}/drillAttempts/${drillId}`
       );
       const docSnap = await getDoc(docRef);
@@ -209,7 +209,7 @@ export class ChallengeService {
   async getChallengeDrillAttempts(userId: string, challengeId: string): Promise<DrillAttempt[]> {
     try {
       const attemptsCol = collection(
-        this.firestore,
+        this.firebase.db,
         `users/${userId}/challengeProgress/${challengeId}/drillAttempts`
       );
       const q = query(attemptsCol, orderBy('lastAttemptAt', 'desc'));
@@ -246,7 +246,7 @@ export class ChallengeService {
   ): Promise<void> {
     try {
       const attemptRef = doc(
-        this.firestore,
+        this.firebase.db,
         `users/${userId}/challengeProgress/${challengeId}/drillAttempts/${drillId}`
       );
       const attemptSnap = await getDoc(attemptRef);
@@ -310,13 +310,13 @@ export class ChallengeService {
   private async updateChallengeProgress(userId: string, challengeId: string): Promise<void> {
     try {
       const attemptsCol = collection(
-        this.firestore,
+        this.firebase.db,
         `users/${userId}/challengeProgress/${challengeId}/drillAttempts`
       );
       const snapshot = await getDocs(attemptsCol);
 
       const completedDrills = snapshot.size;
-      const progressRef = doc(this.firestore, `users/${userId}/challengeProgress/${challengeId}`);
+      const progressRef = doc(this.firebase.db, `users/${userId}/challengeProgress/${challengeId}`);
       const progressSnap = await getDoc(progressRef);
 
       if (!progressSnap.exists()) return;

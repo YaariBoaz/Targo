@@ -34,6 +34,18 @@
 
   <!-- Content -->
   <div class="store-content" *ngIf="!loading && !errorMessage">
+    <!-- Insufficient Bullets Alert -->
+    <div class="insufficient-bullets-alert" *ngIf="showInsufficientMessage">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <h3>Insufficient Bullets</h3>
+        <p>
+          You need <strong>{{ requiredBullets }}</strong> bullets but only have <strong>{{ bulletCount }}</strong>.
+          Purchase <strong>{{ bulletsToPurchase }}</strong> more bullets below to continue.
+        </p>
+      </div>
+    </div>
+
     <!-- Unlimited Bullets Banner (if user has yearly subscription) -->
     <div class="premium-banner active" *ngIf="hasUnlimitedBullets">
       <div class="banner-icon">

@@ -5,6 +5,8 @@ import { ScreenComponentMap } from 'src/app/shared/models/screen-state';
 import { AuthService } from 'src/app/shared/services/authentication/auth.service';
 import { UserService } from 'src/app/shared/services/user.service';
 import { UserStoreService } from 'src/app/shared/services/authentication/user-store.service';
+import { GuestService } from '@core/services/guest.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-welcome',
@@ -18,7 +20,9 @@ export class WelcomeComponent implements OnInit {
     private nav: NavigationService,
     private authService: AuthService,
     private userService: UserService,
-    private userStore: UserStoreService
+    private userStore: UserStoreService,
+    private guestService: GuestService,
+    private router: Router
   ) {}
 
   ngOnInit() {}
@@ -32,10 +36,14 @@ export class WelcomeComponent implements OnInit {
   }
 
   continueAsGuest() {
-    // This is where you can init an anonymous user or skip auth
     console.log('Continuing as guest...');
 
-    // Optionally, navigate to dashboard or setup
+    // Enable guest mode
+    this.guestService.enableGuestMode();
+
+    // Navigate to home/dashboard
+    // Using the router to navigate to tabs/home
+    this.router.navigate(['/tabs/home'], { replaceUrl: true });
   }
 
   async loginWithGoogle() {

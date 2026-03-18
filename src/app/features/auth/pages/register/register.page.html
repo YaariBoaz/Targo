@@ -92,15 +92,22 @@
       <!-- Location (Optional) -->
       <div class="input-group">
         <label class="input-label">
-          Location
+          LOCATION
           <span class="optional-label">(Optional)</span>
         </label>
-        <input
-          type="text"
-          class="input-field"
+        <ion-select
+          class="location-select"
           formControlName="location"
-          placeholder="Good if you want to enter location based competitions"
-        />
+          placeholder="Select your shooting range"
+          interface="action-sheet"
+          [disabled]="loadingLocations"
+        >
+          @for (location of locations; track location.id) {
+            <ion-select-option [value]="location.name">
+              {{ location.name }}
+            </ion-select-option>
+          }
+        </ion-select>
       </div>
 
       <!-- Shooter Level Selection -->

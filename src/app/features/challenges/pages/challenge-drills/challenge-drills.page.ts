@@ -1,10 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonIcon, ToastController, NavParams, ModalController } from '@ionic/angular/standalone';
+import {
+  IonIcon,
+  ToastController,
+  NavParams,
+  ModalController,
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { arrowBack, lockClosed, star, starOutline } from 'ionicons/icons';
-import { Auth } from '@angular/fire/auth';
+import { FirebaseService } from '@shared/services/firebase.service';
+import { LeaderboardService, ChallengeLeaderboardEntry } from '@core/services/leaderboard.service';
 import { ChallengeService } from '@core/services/challenge.service';
 import { DrillService } from '@core/services/drill.service';
 import { BulletsService } from '@core/services/bullets.service';
@@ -14,7 +20,7 @@ import { Challenge } from '@models/challenge.model';
 import { ChallengeDrill } from '@models/challenge-drill.model';
 import { DrillAttempt } from '@models/challenge-progress.model';
 import { DrillSetup } from '@models/drill-session.model';
-import { checkAndDeductBullets } from '@utils/bullets.utils';
+import { StorePage } from '@features/store/pages/store/store.page';
 
 interface DrillWithStatus extends ChallengeDrill {
   status: 'locked' | 'available' | 'completed';
@@ -37,10 +43,11 @@ export class ChallengeDrillsPage implements OnInit {
   private drillService = inject(DrillService);
   private bulletsService = inject(BulletsService);
   private bleService = inject(BLEService);
-  private auth = inject(Auth);
+  private firebase = inject(FirebaseService);
+  private leaderboardService = inject(LeaderboardService);
   private toastController = inject(ToastController);
-  private modalController = inject(ModalController);
   private stackNav = inject(StackNavigationService);
+  private modalCtrl = inject(ModalController);
 
   challengeId: string = '';
   challenge: Challenge | null = null;
@@ -50,6 +57,10 @@ export class ChallengeDrillsPage implements OnInit {
   sourceTab: string = ''; // Track which tab the user came from
 
   drills: DrillWithStatus[] = [];
+  activeTab: 'drills' | 'leaderboard' = 'drills';
+  leaderboard: ChallengeLeaderboardEntry[] = [];
+  leaderboardLoading = false;
+  currentUserId: string | null = null;
 
   constructor() {
     addIcons({ arrowBack, lockClosed, star, starOutline });
@@ -99,9 +110,11 @@ export class ChallengeDrillsPage implements OnInit {
 
       // Load user's attempt data if authenticated
       let drillAttempts: DrillAttempt[] = [];
-      if (this.auth.currentUser) {
+      await this.firebase.auth.authStateReady();
+      this.currentUserId = this.firebase.auth.currentUser?.uid || null;
+      if (this.currentUserId) {
         drillAttempts = await this.challengeService.getChallengeDrillAttempts(
-          this.auth.currentUser.uid,
+          this.currentUserId,
           this.challengeId
         );
       }
@@ -139,6 +152,21 @@ export class ChallengeDrillsPage implements OnInit {
           stars: attempt?.bestStars,
         } as DrillWithStatus;
       });
+
+      // Update challenge leaderboard with user's current total score
+      if (this.currentUserId && drillAttempts.length > 0) {
+        const totalScore = drillAttempts.reduce((sum, a) => sum + (a.bestScore || 0), 0);
+        const completedDrills = drillAttempts.filter((a) => a.status === 'completed').length;
+        const user = this.firebase.auth.currentUser!;
+        await this.leaderboardService.updateChallengeLeaderboard(
+          this.currentUserId,
+          this.challengeId,
+          user.displayName || user.email || 'Unknown',
+          totalScore,
+          completedDrills,
+          user.photoURL || undefined
+        );
+      }
     } catch (error) {
       console.error('Error loading challenge data:', error);
     } finally {
@@ -176,23 +204,40 @@ export class ChallengeDrillsPage implements OnInit {
     }
 
     // Check authentication
-    const currentUser = this.auth.currentUser;
+    const currentUser = this.firebase.auth.currentUser;
     if (!currentUser) {
       await this.showToast('Please log in to start a drill', 'danger');
       return;
     }
 
-    // Check if user has enough bullets and deduct them
+    // Check if user has enough bullets
     const requiredBullets = drill.requirements.numberOfBullets;
-    const hasEnoughBullets = await checkAndDeductBullets(
-      requiredBullets,
-      this.modalController,
-      this.bulletsService
-    );
+    if (!this.bulletsService.hasEnoughBullets(requiredBullets)) {
+      console.log('User does not have enough bullets - opening store modal');
+      const bulletsNeeded =
+        requiredBullets - this.bulletsService.getCurrentBulletCount();
 
-    if (!hasEnoughBullets) {
-      console.log('User does not have enough bullets or cancelled');
-      return; // User doesn't have enough bullets or cancelled the modal
+      // Open store page as a modal
+      const modal = await this.modalCtrl.create({
+        component: StorePage,
+        componentProps: {
+          isModal: true,
+          bullets: bulletsNeeded,
+          required: requiredBullets,
+        },
+      });
+      await modal.present();
+      return; // Stop execution, let user buy bullets
+    }
+
+    // Deduct bullets
+    const success = await this.bulletsService.deductBullets(requiredBullets);
+    if (!success) {
+      await this.showToast(
+        'Failed to deduct bullets. Please try again.',
+        'danger'
+      );
+      return;
     }
 
     // Start challenge if not already started
@@ -245,12 +290,37 @@ export class ChallengeDrillsPage implements OnInit {
     // Check if BLE is connected, if not navigate to BLE connection page
     if (!this.bleService.isConnected()) {
       this.router.navigate(['/ble-connection'], {
-        queryParams: { returnUrl: '/tabs/challenges' }
+        queryParams: { returnUrl: '/tabs/challenges' },
       });
     } else {
       // Already connected, go straight to drill preparation
       this.router.navigate(['/drill/prepare']);
     }
+  }
+
+  async switchTab(tab: 'drills' | 'leaderboard') {
+    this.activeTab = tab;
+    if (tab === 'leaderboard' && this.leaderboard.length === 0) {
+      await this.loadLeaderboard();
+    }
+  }
+
+  async loadLeaderboard() {
+    this.leaderboardLoading = true;
+    try {
+      this.leaderboard = await this.leaderboardService.getChallengeLeaderboard(this.challengeId);
+    } finally {
+      this.leaderboardLoading = false;
+    }
+  }
+
+  getInitials(displayName: string): string {
+    return displayName
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   }
 
   private async showToast(

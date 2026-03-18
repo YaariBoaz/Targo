@@ -9,15 +9,16 @@ ion-tabs {
 
 // Tab Bar with Safe Area Support
 ion-tab-bar {
-  // Add safe area padding to bottom for home indicators
-  padding-bottom: var(--safe-area-bottom);
-
   // Black background
   background: #020202;
   --background: #020202;
 
-  // Fixed height of 80px (total height including safe area)
-  height: 80px;
+  // Height includes safe area so icons stay above home indicator
+  height: calc(30px + var(--safe-area-bottom));
+  padding-bottom: var(--safe-area-bottom);
+
+  // Prevent Ionic from adding its own safe area on top of ours
+  --ion-safe-area-bottom: 0px;
 
   // Remove any extra spacing
   margin: 0;

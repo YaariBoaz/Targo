@@ -1,7 +1,15 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { IonContent, IonButton, IonIcon, ToastController, LoadingController } from '@ionic/angular/standalone';
+import {
+  IonContent,
+  IonButton,
+  IonIcon,
+  ToastController,
+  LoadingController,
+} from '@ionic/angular/standalone';
 import { NavigationService } from '@core/services/navigation.service';
 import { AuthService } from '@core/services/auth';
+import { GuestService } from '@core/services/guest.service';
+import { OnboardingService } from '@core/services/onboarding.service';
 import { addIcons } from 'ionicons';
 import { logoFacebook, logoGoogle } from 'ionicons/icons';
 
@@ -15,6 +23,8 @@ import { logoFacebook, logoGoogle } from 'ionicons/icons';
 export class WelcomePage implements OnInit {
   private navigationService = inject(NavigationService);
   private authService = inject(AuthService);
+  private guestService = inject(GuestService);
+  private onboardingService = inject(OnboardingService);
   private toastController = inject(ToastController);
   private loadingController = inject(LoadingController);
 
@@ -29,12 +39,25 @@ export class WelcomePage implements OnInit {
   ngOnInit() {
     // Subscribe to auth state to check if user is already authenticated
     // This ensures we wait for Firebase Auth to initialize
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe(async (user) => {
       if (user) {
-        console.log('Welcome page - User already authenticated, redirecting to home...');
-        this.navigationService.navigateRoot('/tabs/home');
+        console.log(
+          'Welcome page - User already authenticated, checking onboarding...'
+        );
+        await this.checkOnboardingAndRedirect();
       }
     });
+  }
+
+  private async checkOnboardingAndRedirect() {
+    // Dismiss any active loading overlay before navigating
+    await this.loadingController.dismiss().catch(() => {});
+    const hasSeenOnboarding = await this.onboardingService.hasSeenOnboarding();
+    if (hasSeenOnboarding) {
+      this.navigationService.navigateRoot('/tabs/home');
+    } else {
+      this.navigationService.navigateRoot('/onboarding');
+    }
   }
 
   goToLogin() {
@@ -54,7 +77,7 @@ export class WelcomePage implements OnInit {
     try {
       await this.authService.loginWithFacebook();
       await loading.dismiss();
-      this.navigationService.navigateRoot('/tabs/home');
+      await this.checkOnboardingAndRedirect();
     } catch (error: any) {
       await loading.dismiss();
       await this.showError(error.message || 'Facebook login failed');
@@ -70,17 +93,25 @@ export class WelcomePage implements OnInit {
     try {
       await this.authService.loginWithGoogle();
       await loading.dismiss();
-      this.navigationService.navigateRoot('/tabs/home');
+      await this.checkOnboardingAndRedirect();
     } catch (error: any) {
       await loading.dismiss();
       console.error('Google login error:', error);
-      await this.showError(error.message || 'Google login is not configured yet. Please check SOCIAL_LOGIN_SETUP.md');
+      await this.showError(
+        error.message ||
+          'Google login is not configured yet. Please check SOCIAL_LOGIN_SETUP.md'
+      );
     }
   }
 
-  continueAsGuest() {
-    // Navigate to home without authentication
-    this.navigationService.navigateRoot('/tabs/home');
+  async continueAsGuest() {
+    console.log('Continuing as guest...');
+
+    // Enable guest mode
+    this.guestService.enableGuestMode();
+
+    // Check onboarding for guest users too
+    await this.checkOnboardingAndRedirect();
   }
 
   private async showError(message: string) {

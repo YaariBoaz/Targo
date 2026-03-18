@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import {
-  Firestore,
   collection,
   doc,
   addDoc,
@@ -13,8 +12,8 @@ import {
   limit,
   serverTimestamp,
   Timestamp,
-} from '@angular/fire/firestore';
-import { Auth } from '@angular/fire/auth';
+} from 'firebase/firestore';
+import { FirebaseService } from '@shared/services/firebase.service';
 import { DrillSession, DrillSetup, DrillResult, DrillStatus } from '@models/drill-session.model';
 import { DrillSessionRecord } from '@models/drill-session-record.model';
 import { LeaderboardService } from './leaderboard.service';
@@ -23,8 +22,7 @@ import { LeaderboardService } from './leaderboard.service';
   providedIn: 'root',
 })
 export class DrillService {
-  private firestore = inject(Firestore);
-  private auth = inject(Auth);
+  private firebase = inject(FirebaseService);
   private leaderboardService = inject(LeaderboardService);
   private currentDrillSession: DrillSession | null = null;
   private currentDrillSetup: DrillSetup | null = null;
@@ -77,7 +75,7 @@ export class DrillService {
         updatedAt: new Date(),
       };
 
-      const drillsCollection = collection(this.firestore, 'drillSessions');
+      const drillsCollection = collection(this.firebase.db, 'drillSessions');
       const docRef = await addDoc(drillsCollection, {
         ...drillSession,
         startedAt: serverTimestamp(),
@@ -127,7 +125,7 @@ export class DrillService {
         updatedAt: new Date(),
       };
 
-      const drillsCollection = collection(this.firestore, 'drillSessions');
+      const drillsCollection = collection(this.firebase.db, 'drillSessions');
       const docRef = await addDoc(drillsCollection, {
         ...drillSession,
         startedAt: serverTimestamp(),
@@ -156,7 +154,7 @@ export class DrillService {
    */
   async startDrill(sessionId: string): Promise<void> {
     try {
-      const sessionRef = doc(this.firestore, `drillSessions/${sessionId}`);
+      const sessionRef = doc(this.firebase.db, `drillSessions/${sessionId}`);
       await updateDoc(sessionRef, {
         status: 'in_progress',
         startedAt: serverTimestamp(),
@@ -180,7 +178,7 @@ export class DrillService {
    */
   async completeDrill(sessionId: string, result: DrillResult): Promise<void> {
     try {
-      const sessionRef = doc(this.firestore, `drillSessions/${sessionId}`);
+      const sessionRef = doc(this.firebase.db, `drillSessions/${sessionId}`);
       await updateDoc(sessionRef, {
         result,
         status: 'completed',
@@ -206,7 +204,7 @@ export class DrillService {
    */
   async abandonDrill(sessionId: string): Promise<void> {
     try {
-      const sessionRef = doc(this.firestore, `drillSessions/${sessionId}`);
+      const sessionRef = doc(this.firebase.db, `drillSessions/${sessionId}`);
       await updateDoc(sessionRef, {
         status: 'abandoned',
         completedAt: serverTimestamp(),
@@ -230,7 +228,7 @@ export class DrillService {
    */
   async getDrillSession(sessionId: string): Promise<DrillSession | null> {
     try {
-      const sessionRef = doc(this.firestore, `drillSessions/${sessionId}`);
+      const sessionRef = doc(this.firebase.db, `drillSessions/${sessionId}`);
       const sessionDoc = await getDoc(sessionRef);
 
       if (sessionDoc.exists()) {
@@ -257,7 +255,7 @@ export class DrillService {
    */
   async getUserDrillSessions(userId: string, limitCount: number = 10): Promise<DrillSession[]> {
     try {
-      const drillsCollection = collection(this.firestore, 'drillSessions');
+      const drillsCollection = collection(this.firebase.db, 'drillSessions');
       const q = query(
         drillsCollection,
         where('userId', '==', userId),
@@ -292,7 +290,7 @@ export class DrillService {
    */
   async getUserCompletedDrills(userId: string, limitCount: number = 10): Promise<DrillSession[]> {
     try {
-      const drillsCollection = collection(this.firestore, 'drillSessions');
+      const drillsCollection = collection(this.firebase.db, 'drillSessions');
       const q = query(
         drillsCollection,
         where('userId', '==', userId),
@@ -347,7 +345,7 @@ export class DrillService {
       console.log('[DrillService] Collection path:', `users/${uid}/drills`);
       console.log('[DrillService] Session data:', JSON.stringify(sessionData, null, 2));
 
-      const drillsCollection = collection(this.firestore, `users/${uid}/drills`);
+      const drillsCollection = collection(this.firebase.db, `users/${uid}/drills`);
       console.log('[DrillService] Collection reference created');
 
       const dataToSave = {
@@ -363,7 +361,7 @@ export class DrillService {
 
       // Update leaderboard with the score from this session
       try {
-        const user = this.auth.currentUser;
+        const user = this.firebase.auth.currentUser;
         if (user) {
           // Use score if available, otherwise calculate from statistics
           let scoreToUse = sessionData.score;
@@ -406,7 +404,7 @@ export class DrillService {
    */
   async getDrillHistory(uid: string, limitCount: number = 10): Promise<DrillSessionRecord[]> {
     try {
-      const drillsCollection = collection(this.firestore, `users/${uid}/drills`);
+      const drillsCollection = collection(this.firebase.db, `users/${uid}/drills`);
       const q = query(
         drillsCollection,
         orderBy('completedAt', 'desc'),

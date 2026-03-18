@@ -1,0 +1,103 @@
+<div class="lobby-container">
+  <!-- Header -->
+  <header class="header">
+    <button class="leave-button" (click)="leaveLobby()">
+      <span class="leave-icon">←</span>
+      <span class="leave-text">Leave</span>
+    </button>
+    <h1 class="title">Lobby</h1>
+  </header>
+
+  <!-- Competition Info Card -->
+  <div class="competition-card">
+    <h2 class="competition-title">Competition Lobby</h2>
+    <div class="competition-info">
+      <div class="info-item">
+        <span class="info-label">Players:</span>
+        <span class="info-value">{{ currentPlayers }}/{{ maxPlayers }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Auto-start:</span>
+        <span class="info-value">{{ autoStartDisplay }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Players Section -->
+  <section class="players-section">
+    <h2 class="section-title">PLAYERS</h2>
+    <div class="players-list">
+      <div
+        class="player-card"
+        *ngFor="let player of players"
+        [class.pending]="player.status === 'pending'"
+      >
+        <div class="player-avatar">
+          <span class="avatar-initials">{{ getPlayerInitials(player.name) }}</span>
+        </div>
+        <div class="player-info">
+          <p class="player-name">{{ player.name }}</p>
+        </div>
+        <div class="player-status" [class.ready]="player.status === 'ready'">
+          <svg
+            *ngIf="player.status === 'ready'"
+            class="status-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <svg
+            *ngIf="player.status === 'pending'"
+            class="status-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span class="status-text">{{
+            player.status === 'ready' ? 'READY' : 'PENDING'
+          }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shooting Order Section -->
+  <section class="shooting-order-section">
+    <h2 class="section-title">SHOOTING ORDER</h2>
+    <div class="order-list">
+      <div class="order-item" *ngFor="let player of shootingOrder; let i = index">
+        <div class="order-number">{{ i + 1 }}</div>
+        <div class="order-avatar">
+          <span class="avatar-initials">{{ getPlayerInitials(player.name) }}</span>
+        </div>
+        <div class="order-info">
+          <p class="order-name">{{ player.name }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Start Button -->
+  <div class="button-container">
+    <button class="start-button" [disabled]="!canStart" (click)="startGame()">
+      START NOW
+    </button>
+  </div>
+</div>

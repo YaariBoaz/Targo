@@ -1,7 +1,9 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ModalController } from '@ionic/angular/standalone';
+import { NavigationService } from '@core/services/navigation.service';
 import { InAppPurchaseService } from '@core/services/in-app-purchase.service';
 import { BulletsService } from '@core/services/bullets.service';
 import { Auth } from '@angular/fire/auth';
@@ -17,11 +19,18 @@ import { PAYWALL_RESULT } from '@revenuecat/purchases-capacitor-ui';
   styleUrls: ['./store.page.scss'],
 })
 export class StorePage implements OnInit, OnDestroy {
+  @Input() isModal = false;
+  @Input() bullets: number | null = null;
+  @Input() required: number | null = null;
+  @Input() bonus: number | null = null;
+
   private purchaseService = inject(InAppPurchaseService);
   private bulletsService = inject(BulletsService);
   private auth = inject(Auth);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private navigationService = inject(NavigationService);
+  private modalCtrl = inject(ModalController);
   private subscription?: Subscription;
   private bulletsSubscription?: Subscription;
 
@@ -40,6 +49,8 @@ export class StorePage implements OnInit, OnDestroy {
   hasUnlimitedBullets = false;
   bulletsToPurchase = 10; // Default amount
   bonusBullets = 0; // Bonus bullets from special offer
+  requiredBullets = 0; // Bullets required for activity (from query params)
+  showInsufficientMessage = false; // Show message when user came from insufficient bullets
 
   async ngOnInit() {
     this.checkAuthentication();
@@ -49,17 +60,37 @@ export class StorePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Check for query parameters from special offers
+   * Check for query parameters from special offers or insufficient bullets
+   * Prioritizes @Input() properties if they exist (when used as a modal)
    */
   private checkQueryParams() {
-    this.route.queryParams.subscribe(params => {
-      if (params['bullets']) {
-        this.bulletsToPurchase = parseInt(params['bullets'], 10) || 10;
-      }
-      if (params['bonus']) {
-        this.bonusBullets = parseInt(params['bonus'], 10) || 0;
-      }
-    });
+    // Check for @Input properties first
+    if (this.bullets) {
+      this.bulletsToPurchase = this.bullets;
+    }
+    if (this.bonus) {
+      this.bonusBullets = this.bonus;
+    }
+    if (this.required) {
+      this.requiredBullets = this.required;
+      this.showInsufficientMessage = true;
+    }
+
+    // If not a modal, check route query params as a fallback
+    if (!this.isModal) {
+      this.route.queryParams.subscribe((params) => {
+        if (params['bullets']) {
+          this.bulletsToPurchase = parseInt(params['bullets'], 10) || 10;
+        }
+        if (params['bonus']) {
+          this.bonusBullets = parseInt(params['bonus'], 10) || 0;
+        }
+        if (params['required']) {
+          this.requiredBullets = parseInt(params['required'], 10) || 0;
+          this.showInsufficientMessage = true;
+        }
+      });
+    }
   }
 
   ngOnDestroy() {
@@ -373,6 +404,10 @@ export class StorePage implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.router.navigate(['/tabs/profile']);
+    if (this.isModal) {
+      this.modalCtrl.dismiss();
+    } else {
+      this.navigationService.goBack('/tabs/home');
+    }
   }
 }

@@ -45,27 +45,29 @@
 // Tabs
 .tabs {
   display: flex;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm); // Further reduced gap to fit tabs
   margin-top: var(--spacing-sm);
   padding-bottom: var(--spacing-sm);
 }
 
 .tab {
   background: transparent;
-  border: none;
+  border: 1px solid #f6ba16; // Gold border for all tabs
+  border-radius: 9999px; // Pill shape
   font-size: 0.875rem;
-  font-weight: 300;
+  font-weight: 600; // Bolder font for all tabs
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.5);
-  padding: var(--spacing-sm) 0;
+  color: #f6ba16; // Gold text for inactive tabs
+  padding: var(--spacing-sm) var(--spacing-sm); // Reduced horizontal padding
   cursor: pointer;
   position: relative;
-  transition: color 0.2s ease;
+  transition: all 0.3s ease;
   white-space: nowrap;
 
   &.active {
-    color: #f6ba16;
-    font-weight: 600;
+    background-color: #f6ba16; // Solid gold background for active tab
+    color: #0e0e0e; // Dark text for active tab
+    font-weight: 700; // Slightly bolder for active
   }
 }
 
@@ -80,6 +82,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  margin-top: 20px;
 }
 
 // Content Wrapper

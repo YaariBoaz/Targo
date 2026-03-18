@@ -7,15 +7,23 @@
     <div class="home-content">
       <!-- User Header -->
       <app-user-header></app-user-header>
-
+      @if (flags.homeMultiplayerPanel) {
+        <app-multiplayer-panel />
+      }
       <!-- Challenges Section -->
-      <app-challenges-section></app-challenges-section>
+      @if (flags.homeChallengesSection) {
+        <app-challenges-section></app-challenges-section>
+      }
 
       <!-- Special Offers -->
-      <app-special-offers-banner></app-special-offers-banner>
+      @if (flags.homeSpecialOffersBanner) {
+        <app-special-offers-banner></app-special-offers-banner>
+      }
 
       <!-- Statistics Section -->
-      <app-statistics-section></app-statistics-section>
+      @if (flags.homeStatisticsSection) {
+        <app-statistics-section></app-statistics-section>
+      }
     </div>
   </div>
 </div>

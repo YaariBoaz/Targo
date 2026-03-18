@@ -10,18 +10,26 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Auth } from '@angular/fire/auth';
-import { IonIcon } from '@ionic/angular/standalone';
+import { IonIcon, ModalController } from '@ionic/angular/standalone';
+import { FirebaseService } from '@shared/services/firebase.service';
 import { addIcons } from 'ionicons';
 import { chevronDown, chevronUp, shareOutline } from 'ionicons/icons';
 import {
   StatisticsService,
   UserStatistics,
 } from '@core/services/statistics.service';
+import { TabRefreshService } from '@core/services/tab-refresh.service';
+import { HitRatioChartComponent } from '@shared/components/hit-ratio-chart/hit-ratio-chart.component';
+import { ChartDetailModalComponent, ChartDetailData } from '../../components/chart-detail-modal/chart-detail-modal.component';
+import { Subscription } from 'rxjs';
 import { Chart, registerables } from 'chart.js';
+import { FEATURE_FLAGS } from '@core/feature-flags';
 import html2canvas from 'html2canvas';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { ChallengeService } from '@core/services/challenge.service';
+import { ChallengeProgress } from '@models/challenge-progress.model';
+import { Challenge } from '@models/challenge.model';
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -32,19 +40,27 @@ addIcons({ chevronDown, chevronUp, shareOutline });
 @Component({
   selector: 'app-statistics',
   standalone: true,
-  imports: [CommonModule, IonIcon],
+  imports: [CommonModule, IonIcon, HitRatioChartComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './statistics.page.html',
   styleUrls: ['./statistics.page.scss'],
 })
 export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
-  private auth = inject(Auth);
+  readonly flags = FEATURE_FLAGS;
+
+  private firebase = inject(FirebaseService);
   private statisticsService = inject(StatisticsService);
   private router = inject(Router);
+  private tabRefreshService = inject(TabRefreshService);
+  private modalController = inject(ModalController);
+  private challengeService = inject(ChallengeService);
+  private tabSubscription?: Subscription;
+
+  // Challenge progress data
+  userChallenges: Array<ChallengeProgress & { challengeTitle?: string }> = [];
 
   // Stats tab charts
   @ViewChild('accuracyChart') accuracyChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('hitRatioChart') hitRatioChartRef!: ElementRef<HTMLCanvasElement>;
 
   // Insights tab charts
   @ViewChild('adlScoreGauge') adlScoreGaugeRef!: ElementRef<HTMLCanvasElement>;
@@ -63,7 +79,7 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('weakPointsRadar')
   weakPointsRadarRef!: ElementRef<HTMLCanvasElement>;
 
-  activeTab: 'stats' | 'insights' | 'history' = 'stats';
+  activeTab: 'stats' | 'insights' | 'history' = 'history';
   stats: UserStatistics | null = null;
   loading = true;
 
@@ -74,7 +90,6 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
 
   // Stats tab chart instances
   private accuracyChart: Chart | null = null;
-  private hitRatioChart: Chart | null = null;
 
   // Insights tab chart instances
   private adlScoreGauge: Chart | null = null;
@@ -93,6 +108,29 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.viewInitialized && this.stats) {
       setTimeout(() => this.initCharts(), 100);
     }
+
+    // Subscribe to tab changes to reload statistics when statistics tab is activated
+    this.tabSubscription = this.tabRefreshService.tabChange$.subscribe(
+      async (tabName) => {
+        if (tabName === 'statistics') {
+          console.log(
+            'Statistics page - Statistics tab activated, refreshing statistics...'
+          );
+          await this.loadStatistics();
+
+          // Re-initialize charts based on active tab
+          if (this.viewInitialized && this.stats) {
+            setTimeout(() => {
+              if (this.activeTab === 'stats') {
+                this.initCharts();
+              } else if (this.activeTab === 'insights') {
+                this.initInsightsCharts();
+              }
+            }, 100);
+          }
+        }
+      }
+    );
   }
 
   ngAfterViewInit() {
@@ -103,17 +141,16 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initCharts() {
-    this.createHitRatioChart();
     this.createAccuracyChart();
   }
 
   ngOnDestroy() {
+    // Unsubscribe from tab changes
+    this.tabSubscription?.unsubscribe();
+
     // Destroy stats tab charts
     if (this.accuracyChart) {
       this.accuracyChart.destroy();
-    }
-    if (this.hitRatioChart) {
-      this.hitRatioChart.destroy();
     }
 
     // Destroy insights tab charts
@@ -144,9 +181,10 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async loadStatistics() {
-    const user = this.auth.currentUser;
+    await this.firebase.auth.authStateReady();
+    const user = this.firebase.auth.currentUser;
     if (!user) {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/auth/welcome']);
       return;
     }
 
@@ -155,10 +193,46 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
       this.stats = await this.statisticsService.getUserStatistics(user.uid);
       // Initialize filtered sessions for history tab
       this.filterSessions();
+
+      // Load user's challenge progress
+      await this.loadChallengeProgress(user.uid);
     } catch (error) {
       console.error('Error loading statistics:', error);
     } finally {
       this.loading = false;
+    }
+  }
+
+  async loadChallengeProgress(userId: string) {
+    try {
+      const challenges = await this.challengeService.getUserActiveChallenges(userId);
+      console.log('[Statistics] Found', challenges.length, 'active challenges');
+
+      // Fetch challenge titles for each progress
+      this.userChallenges = await Promise.all(
+        challenges.map(async (progress) => {
+          try {
+            const challenge = await this.challengeService.getChallenge(progress.challengeId);
+            const title = challenge?.title?.trim() || `Challenge ${progress.challengeId}`;
+            console.log(`[Statistics] Challenge ${progress.challengeId}: "${title}" - ${progress.progress}%`);
+            return {
+              ...progress,
+              challengeTitle: title,
+            };
+          } catch (error) {
+            console.error(`[Statistics] Error fetching challenge ${progress.challengeId}:`, error);
+            return {
+              ...progress,
+              challengeTitle: `Challenge ${progress.challengeId}`,
+            };
+          }
+        })
+      );
+
+      console.log('[Statistics] User challenges loaded:', this.userChallenges);
+    } catch (error) {
+      console.error('[Statistics] Error loading challenge progress:', error);
+      this.userChallenges = [];
     }
   }
 
@@ -182,91 +256,6 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
     this.createReactionTimeAreaChart();
     this.createSplitTimeAreaChart();
     this.createWeakPointsRadar();
-  }
-
-  private createHitRatioChart() {
-    if (!this.hitRatioChartRef || !this.stats) return;
-
-    const canvas = this.hitRatioChartRef.nativeElement;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    if (this.hitRatioChart) {
-      this.hitRatioChart.destroy();
-    }
-
-    const hitRatio = this.stats.hitRatio;
-    const change = this.stats.hitRatioChange || 0;
-    const arrow = change >= 0 ? '↗' : '↘';
-    const changeColor = change >= 0 ? '#10b981' : '#ef4444';
-
-    // For a gauge-style chart with gap at bottom
-    // We use circumference of 270 degrees (75% of 360) to create the gap
-    // The filled and empty portions are calculated based on hitRatio within that 270 degrees
-    const filledValue = hitRatio;
-    const emptyValue = 100 - hitRatio;
-
-    this.hitRatioChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        datasets: [
-          {
-            data: [filledValue, emptyValue],
-            backgroundColor: ['#3B82F6', '#2a2a2a'],
-            borderWidth: 0,
-            borderRadius: 10, // Rounded ends for the arc segments
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '85%',
-        rotation: -135, // Start from bottom-left (225 degrees, or -135 from top)
-        circumference: 270, // Only draw 270 degrees, leaving 90 degree gap at bottom
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: false },
-        },
-      },
-      plugins: [
-        {
-          id: 'centerText',
-          afterDraw: (chart: any) => {
-            const { ctx, chartArea } = chart;
-            if (!chartArea) return;
-
-            const centerX = (chartArea.left + chartArea.right) / 2;
-            const centerY = (chartArea.top + chartArea.bottom) / 2;
-
-            ctx.save();
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            // Label
-            ctx.font = '12px Lexend';
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText('Hit Ratio', centerX, centerY - 20);
-
-            // Percentage
-            ctx.font = 'bold 16px Lexend';
-            ctx.fillStyle = '#3B82F6';
-            ctx.fillText(`${hitRatio.toFixed(1)}%`, centerX, centerY + 2);
-
-            // Change
-            ctx.font = '600 12px Lexend';
-            ctx.fillStyle = changeColor;
-            ctx.fillText(
-              `${arrow} ${this.formatChange(change, '%')}`,
-              centerX,
-              centerY + 22
-            );
-
-            ctx.restore();
-          },
-        },
-      ],
-    });
   }
 
   private createAccuracyChart() {
@@ -415,15 +404,16 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
               '#10b981',
             ],
             borderWidth: 0,
+            spacing: 5,
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '75%',
-        rotation: -135,
-        circumference: 270,
+        cutout: '80%',
+        rotation: -135, // Start from bottom-left
+        circumference: 270, // 270 degrees arc (3/4 circle)
         plugins: {
           legend: { display: false },
           tooltip: { enabled: false },
@@ -433,36 +423,45 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
         {
           id: 'gaugeNeedle',
           afterDraw: (chart: any) => {
-            const { ctx, chartArea } = chart;
+            const { ctx, chartArea, config } = chart;
             if (!chartArea) return;
 
+            // Position the pivot point at the bottom center of the chart area
             const centerX = (chartArea.left + chartArea.right) / 2;
-            const centerY = (chartArea.top + chartArea.bottom) / 2;
-            const radius =
-              Math.min(
-                chartArea.right - chartArea.left,
-                chartArea.bottom - chartArea.top
-              ) / 2;
+            const centerY = chartArea.bottom - 10; // 10 pixels up from bottom
 
-            // Calculate needle angle based on score (270 degrees total arc)
-            const needleAngle =
-              (-135 + (scorePercentage / 100) * 270) * (Math.PI / 180);
+            // Calculate the radius based on the chart dimensions
+            const width = chartArea.right - chartArea.left;
+            const height = chartArea.bottom - chartArea.top;
+            const radius = Math.min(width, height * 1.5) / 2;
 
-            // Draw needle
+            // Calculate needle angle based on score
+            // rotation: -135 means the arc starts at -135° (bottom-left)
+            // and sweeps 270° clockwise to 135° (bottom-right)
+            // In canvas: 0° = right (3 o'clock), 90° = down (6 o'clock),
+            // -90° or 270° = up (12 o'clock), 180° or -180° = left (9 o'clock)
+            // We want: 0% score = -135° (bottom-left), 100% score = 135° (bottom-right)
+            const startAngle = -135; // Bottom-left in degrees
+            const sweepAngle = 270; // Arc sweep
+            const needleAngleDeg = startAngle + (scorePercentage / 100) * sweepAngle;
+            const needleAngle = (needleAngleDeg * Math.PI) / 180;
+
+            // Draw needle - extend upward from bottom pivot point
             ctx.save();
             ctx.beginPath();
             ctx.moveTo(centerX, centerY);
             ctx.lineTo(
-              centerX + Math.cos(needleAngle) * radius * 0.7,
-              centerY + Math.sin(needleAngle) * radius * 0.7
+              centerX + Math.cos(needleAngle) * radius * 0.75,
+              centerY + Math.sin(needleAngle) * radius * 0.75
             );
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
             ctx.stroke();
 
-            // Draw center circle
+            // Draw center circle at bottom pivot point
             ctx.beginPath();
-            ctx.arc(centerX, centerY, 6, 0, Math.PI * 2);
+            ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
             ctx.restore();
@@ -1058,6 +1057,17 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
     return Math.abs(value);
   }
 
+  // Expose Math to template
+  Math = Math;
+
+  // Get top 3 challenges with highest progress
+  get top3Challenges() {
+    return this.userChallenges
+      .slice()
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 3);
+  }
+
   // History tab methods
   setHistoryFilter(filter: 'training' | 'challenges' | 'league') {
     this.historyFilter = filter;
@@ -1140,11 +1150,15 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
   async shareSession(session: any, sessionIndex: number) {
     try {
       // Find the expanded session card (session-details div)
-      const sessionCards = document.querySelectorAll('.session-card.expanded .session-details');
+      const sessionCards = document.querySelectorAll(
+        '.session-card.expanded .session-details'
+      );
       const sessionCard = sessionCards[0] as HTMLElement;
 
       if (!sessionCard) {
-        console.error('Session card not found. Make sure the card is expanded.');
+        console.error(
+          'Session card not found. Make sure the card is expanded.'
+        );
         return;
       }
 
@@ -1196,7 +1210,6 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
             console.log('Could not delete temporary file:', deleteError);
           }
         }, 5000); // Wait 5 seconds before deleting
-
       } catch (fsError) {
         console.error('Filesystem error:', fsError);
 
@@ -1210,5 +1223,698 @@ export class StatisticsPage implements OnInit, AfterViewInit, OnDestroy {
     } catch (error) {
       console.error('Error sharing session:', error);
     }
+  }
+
+  /**
+   * Open chart detail modal for grouping
+   */
+  async openGroupingDetail() {
+    console.log('openGroupingDetail called');
+    if (!this.stats) return;
+
+    const values = [4, 3, 5, 2.5, 4.5, 3, this.stats.groupingTightness];
+
+    const chartData = {
+      type: 'line',
+      data: {
+        labels: values.map(() => ''),
+        datasets: [
+          {
+            data: values,
+            borderColor: '#f97316',
+            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#f97316',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            borderWidth: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+        },
+        scales: {
+          x: { display: false },
+          y: {
+            display: true,
+            min: 0,
+            max: 10,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+        },
+      },
+    };
+
+    try {
+      console.log('Creating modal...');
+      const modal = await this.modalController.create({
+        component: ChartDetailModalComponent,
+        componentProps: {
+          data: {
+            type: 'grouping',
+            title: 'Grouping Tightness',
+            currentValue: this.stats.groupingTightness,
+            unit: 'cm',
+            chartData: chartData,
+          } as ChartDetailData,
+        },
+      });
+
+      console.log('Modal created, presenting...');
+      await modal.present();
+      console.log('Modal presented');
+    } catch (error) {
+      console.error('Error opening modal:', error);
+    }
+  }
+
+  /**
+   * Open chart detail modal for accuracy
+   */
+  async openAccuracyDetail() {
+    if (!this.stats) return;
+
+    const values = [5, 4, 6, 3.5, 5.5, 3, this.stats.accuracy];
+
+    const chartData = {
+      type: 'line',
+      data: {
+        labels: values.map(() => ''),
+        datasets: [
+          {
+            data: values,
+            borderColor: '#14b8a6',
+            backgroundColor: 'rgba(20, 184, 166, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#14b8a6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            borderWidth: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+        },
+        scales: {
+          x: { display: false },
+          y: {
+            display: true,
+            min: 0,
+            max: 10,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+        },
+      },
+    };
+
+    const modal = await this.modalController.create({
+      component: ChartDetailModalComponent,
+      componentProps: {
+        data: {
+          type: 'accuracy',
+          title: 'Accuracy',
+          currentValue: this.stats.accuracy,
+          unit: 'cm',
+          chartData: chartData,
+        } as ChartDetailData,
+      },
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Open chart detail modal for hit ratio
+   */
+  async openHitRatioDetail() {
+    if (!this.stats) return;
+
+    const sessions = this.stats.sessionHistory.slice(0, 7).reverse();
+    let labels: string[];
+    let values: number[];
+
+    if (sessions.length > 0) {
+      labels = sessions.map((_, i) => `Session ${i + 1}`);
+      values = sessions.map((session) => {
+        const expectedBullets = session.drillSetup?.numberOfBullets || 0;
+        const shotsRecorded = session.shots?.length || 0;
+        return expectedBullets > 0
+          ? (shotsRecorded / expectedBullets) * 100
+          : 0;
+      });
+    } else {
+      labels = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7'];
+      values = [70, 75, 72, 80, 78, 82, this.stats.hitRatio];
+    }
+
+    const chartData = {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.3)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#3B82F6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            borderWidth: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+        },
+        scales: {
+          x: {
+            display: true,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+          y: {
+            display: true,
+            min: 0,
+            max: 100,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+        },
+      },
+    };
+
+    const modal = await this.modalController.create({
+      component: ChartDetailModalComponent,
+      componentProps: {
+        data: {
+          type: 'hitRatio',
+          title: 'Hit Ratio',
+          currentValue: this.stats.hitRatio,
+          unit: '%',
+          chartData: chartData,
+        } as ChartDetailData,
+      },
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Open chart detail modal for reaction time
+   */
+  async openReactionTimeDetail() {
+    if (!this.stats) return;
+
+    const sessions = this.stats.sessionHistory.slice(0, 7).reverse();
+    let labels: string[];
+    let values: number[];
+
+    if (sessions.length > 0) {
+      labels = sessions.map((_, i) => `Session ${i + 1}`);
+      values = sessions.map((session) => session.statistics.avgSplitTime || 0);
+    } else {
+      labels = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7'];
+      values = [2.5, 2.3, 2.6, 2.2, 2.4, 2.1, this.stats.reactionTime];
+    }
+
+    const chartData = {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            borderColor: '#84cc16',
+            backgroundColor: 'rgba(132, 204, 22, 0.3)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#84cc16',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            borderWidth: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+        },
+        scales: {
+          x: {
+            display: true,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+          y: {
+            display: true,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+        },
+      },
+    };
+
+    const modal = await this.modalController.create({
+      component: ChartDetailModalComponent,
+      componentProps: {
+        data: {
+          type: 'reactionTime',
+          title: 'Reaction Time',
+          currentValue: this.stats.reactionTime,
+          unit: 's',
+          chartData: chartData,
+        } as ChartDetailData,
+      },
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Open chart detail modal for split time
+   */
+  async openSplitTimeDetail() {
+    if (!this.stats) return;
+
+    const sessions = this.stats.sessionHistory.slice(0, 7).reverse();
+    let labels: string[];
+    let values: number[];
+
+    if (sessions.length > 0) {
+      labels = sessions.map((_, i) => `Session ${i + 1}`);
+      values = sessions.map((session) => session.statistics.avgSplitTime || 0);
+    } else {
+      labels = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7'];
+      values = [5.5, 5.8, 5.2, 6.0, 5.7, 6.2, this.stats.splitTimes];
+    }
+
+    const chartData = {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            borderColor: '#14b8a6',
+            backgroundColor: 'rgba(20, 184, 166, 0.3)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#14b8a6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            borderWidth: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+        },
+        scales: {
+          x: {
+            display: true,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+          y: {
+            display: true,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+        },
+      },
+    };
+
+    const modal = await this.modalController.create({
+      component: ChartDetailModalComponent,
+      componentProps: {
+        data: {
+          type: 'splitTime',
+          title: 'Split Time',
+          currentValue: this.stats.splitTimes,
+          unit: 's',
+          chartData: chartData,
+        } as ChartDetailData,
+      },
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Open ADL Score detail modal
+   */
+  async openAdlScoreDetail() {
+    if (!this.stats) return;
+
+    console.log('ADL Score clicked - opening modal');
+
+    // Calculate score percentage (assuming max score of 1000)
+    const maxScore = 1000;
+    const scorePercentage = Math.min((this.stats.ratingPoints / maxScore) * 100, 100);
+
+    // Create the same speedometer-style gauge as shown in the card
+    const chartData = {
+      type: 'doughnut',
+      data: {
+        datasets: [
+          {
+            data: [20, 20, 20, 20, 20], // 5 equal zones
+            backgroundColor: ['#ef4444', '#f97316', '#f6ba16', '#84cc16', '#10b981'],
+            borderWidth: 0,
+            spacing: 5,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '80%',
+        rotation: -135, // Start from bottom-left
+        circumference: 270, // 270 degrees arc (3/4 circle)
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false },
+        },
+      },
+      plugins: [
+        {
+          id: 'gaugeNeedle',
+          afterDraw: (chart: any) => {
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return;
+
+            // Position the pivot point at the bottom center of the chart area
+            const centerX = (chartArea.left + chartArea.right) / 2;
+            const centerY = chartArea.bottom - 10; // 10 pixels up from bottom
+
+            // Calculate the radius based on the chart dimensions
+            const width = chartArea.right - chartArea.left;
+            const height = chartArea.bottom - chartArea.top;
+            const radius = Math.min(width, height * 1.5) / 2;
+
+            // Calculate needle angle based on score
+            const startAngle = -135; // Bottom-left in degrees
+            const sweepAngle = 270; // Arc sweep
+            const needleAngleDeg = startAngle + (scorePercentage / 100) * sweepAngle;
+            const needleAngle = (needleAngleDeg * Math.PI) / 180;
+
+            // Draw needle - extend upward from bottom pivot point
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(
+              centerX + Math.cos(needleAngle) * radius * 0.75,
+              centerY + Math.sin(needleAngle) * radius * 0.75
+            );
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Draw center circle at bottom pivot point
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.restore();
+          },
+        },
+      ],
+    };
+
+    const modal = await this.modalController.create({
+      component: ChartDetailModalComponent,
+      componentProps: {
+        data: {
+          type: 'adlScore',
+          title: 'ADL Score',
+          currentValue: this.stats.ratingPoints,
+          unit: 'RP',
+          chartData: chartData,
+        } as ChartDetailData,
+      },
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Open Challenge Complete detail modal
+   */
+  async openChallengeCompleteDetail() {
+    if (!this.stats) return;
+
+    console.log('Challenge Complete clicked - opening modal');
+
+    // Create horizontal bar chart showing ALL challenges with their completion percentage
+    const labels = this.userChallenges.length > 0
+      ? this.userChallenges.map(c => c.challengeTitle || 'Unknown')
+      : ['No challenges started'];
+
+    const data = this.userChallenges.length > 0
+      ? this.userChallenges.map(c => c.progress)
+      : [0];
+
+    // Color bars based on progress: green (>=75%), yellow (50-75%), orange (25-50%), red (<25%)
+    const backgroundColors = this.userChallenges.length > 0
+      ? this.userChallenges.map(c => {
+          if (c.progress >= 75) return '#10b981';  // green
+          if (c.progress >= 50) return '#f6ba16';  // yellow
+          if (c.progress >= 25) return '#f97316';  // orange
+          return '#ef4444';  // red
+        })
+      : ['#6b7280'];
+
+    const chartData = {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Completion %',
+            data,
+            backgroundColor: backgroundColors,
+            borderRadius: 4,
+            barThickness: 30,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y', // Horizontal bars
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              label: function(context: any) {
+                return context.parsed.x.toFixed(0) + '% complete';
+              }
+            }
+          },
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.6)',
+              callback: function(value: any) {
+                return value + '%';
+              }
+            },
+            min: 0,
+            max: 100,
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: 'rgba(255, 255, 255, 0.8)', font: { size: 12 } },
+          },
+        },
+      },
+    };
+
+    const modal = await this.modalController.create({
+      component: ChartDetailModalComponent,
+      componentProps: {
+        data: {
+          type: 'challengeComplete',
+          title: 'Challenge Progress',
+          currentValue: this.stats.challengeCompleteRate,
+          unit: '%',
+          chartData: chartData,
+        } as ChartDetailData,
+      },
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Open Global Ranking detail modal
+   */
+  async openGlobalRankingDetail() {
+    if (!this.stats) return;
+
+    console.log('Global Ranking clicked - opening modal');
+
+    // Pass the stats object so the modal can recreate the same ranking stats view
+    const modal = await this.modalController.create({
+      component: ChartDetailModalComponent,
+      componentProps: {
+        data: {
+          type: 'globalRanking',
+          title: 'Global Ranking',
+          currentValue: this.stats.globalRank,
+          unit: '',
+          chartData: null,
+        } as ChartDetailData,
+        stats: this.stats, // Pass the full stats object
+      },
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Open Shots Location detail modal
+   */
+  async openShotsLocationDetail() {
+    if (!this.stats) return;
+
+    console.log('Shots Location clicked - opening modal');
+
+    // Get all shots from session history
+    const targetSize = 400;
+    const targetCenter = targetSize / 2;
+    const allShots: { x: number; y: number; distance: number }[] = [];
+
+    this.stats.sessionHistory.forEach((session) => {
+      if (session.shots && session.shots.length > 0) {
+        session.shots.forEach((shot) => {
+          if (shot.x !== undefined && shot.y !== undefined) {
+            const normalizedX = (shot.x - targetCenter) / targetCenter;
+            const normalizedY = -(shot.y - targetCenter) / targetCenter;
+            const distance =
+              shot.distanceFromCenter ||
+              Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY) * 10;
+            allShots.push({ x: normalizedX, y: normalizedY, distance });
+          }
+        });
+      }
+    });
+
+    // Categorize shots
+    const excellentShots = allShots.filter((s) => s.distance <= 2).map((s) => ({ x: s.x, y: s.y }));
+    const goodShots = allShots.filter((s) => s.distance > 2 && s.distance <= 5).map((s) => ({ x: s.x, y: s.y }));
+    const fairShots = allShots.filter((s) => s.distance > 5 && s.distance <= 10).map((s) => ({ x: s.x, y: s.y }));
+    const poorShots = allShots.filter((s) => s.distance > 10).map((s) => ({ x: s.x, y: s.y }));
+
+    const chartData = {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: 'Excellent (≤2cm)',
+            data: excellentShots.length > 0 ? excellentShots : [{ x: 0, y: 0 }],
+            backgroundColor: '#10b981',
+            pointRadius: 6,
+          },
+          {
+            label: 'Good (2-5cm)',
+            data: goodShots.length > 0 ? goodShots : [],
+            backgroundColor: '#3B82F6',
+            pointRadius: 6,
+          },
+          {
+            label: 'Fair (5-10cm)',
+            data: fairShots.length > 0 ? fairShots : [],
+            backgroundColor: '#f6ba16',
+            pointRadius: 6,
+          },
+          {
+            label: 'Poor (>10cm)',
+            data: poorShots.length > 0 ? poorShots : [],
+            backgroundColor: '#ef4444',
+            pointRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: { color: 'rgba(255, 255, 255, 0.8)' },
+          },
+          tooltip: { enabled: true },
+        },
+        scales: {
+          x: {
+            display: true,
+            min: -1,
+            max: 1,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+          y: {
+            display: true,
+            min: -1,
+            max: 1,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+          },
+        },
+      },
+    };
+
+    const modal = await this.modalController.create({
+      component: ChartDetailModalComponent,
+      componentProps: {
+        data: {
+          type: 'shotsLocation',
+          title: 'All Shots Locations',
+          currentValue: allShots.length,
+          unit: 'shots',
+          chartData: chartData,
+        } as ChartDetailData,
+      },
+    });
+
+    await modal.present();
   }
 }

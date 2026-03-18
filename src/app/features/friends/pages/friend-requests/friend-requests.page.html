@@ -1,0 +1,132 @@
+<div class="requests-container">
+  <!-- Header -->
+  <header class="header">
+    <button class="back-button" (click)="goBack()">
+      <span class="back-icon">←</span>
+    </button>
+    <h1 class="title">Friend Requests</h1>
+    <div class="spacer"></div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button
+      class="tab"
+      [class.active]="activeTab === 'received'"
+      (click)="switchTab('received')"
+    >
+      Received ({{ receivedRequests.length }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'sent'"
+      (click)="switchTab('sent')"
+    >
+      Sent ({{ sentRequests.length }})
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading requests...</p>
+  </div>
+  }
+
+  <!-- Received Requests Tab -->
+  @if (!isLoading && activeTab === 'received') {
+    <!-- Empty State -->
+    @if (receivedRequests.length === 0) {
+    <div class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <h3>No Pending Requests</h3>
+      <p>You don't have any friend requests at the moment</p>
+    </div>
+    }
+
+    <!-- Requests List -->
+    @if (receivedRequests.length > 0) {
+    <div class="requests-list">
+      @for (request of receivedRequests; track request.id) {
+      <div class="request-card">
+        <div class="request-avatar">
+          @if (request.user.photoURL) {
+          <img [src]="request.user.photoURL" [alt]="request.user.displayName" />
+          } @else {
+          <span class="avatar-initials">{{ getInitials(request.user.displayName) }}</span>
+          }
+        </div>
+
+        <div class="request-info">
+          <p class="request-name">{{ request.user.displayName || 'Unknown User' }}</p>
+          <p class="request-time">Sent friend request</p>
+        </div>
+
+        <div class="request-actions">
+          <button class="action-btn accept-btn" (click)="acceptRequest(request)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          <button class="action-btn decline-btn" (click)="declineRequest(request)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    }
+  }
+
+  <!-- Sent Requests Tab -->
+  @if (!isLoading && activeTab === 'sent') {
+    <!-- Empty State -->
+    @if (sentRequests.length === 0) {
+    <div class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <h3>No Pending Requests</h3>
+      <p>You haven't sent any friend requests</p>
+    </div>
+    }
+
+    <!-- Requests List -->
+    @if (sentRequests.length > 0) {
+    <div class="requests-list">
+      @for (request of sentRequests; track request.id) {
+      <div class="request-card">
+        <div class="request-avatar">
+          @if (request.user.photoURL) {
+          <img [src]="request.user.photoURL" [alt]="request.user.displayName" />
+          } @else {
+          <span class="avatar-initials">{{ getInitials(request.user.displayName) }}</span>
+          }
+        </div>
+
+        <div class="request-info">
+          <p class="request-name">{{ request.user.displayName || 'Unknown User' }}</p>
+          <p class="request-time">Waiting for response...</p>
+        </div>
+
+        <div class="request-actions">
+          <button class="action-btn cancel-btn" (click)="cancelRequest(request)">
+            Cancel
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    }
+  }
+</div>

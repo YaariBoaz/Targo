@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import {
   IonTabs,
   IonTabBar,
@@ -21,7 +21,10 @@ import { BulletsPanelComponent } from '../modals/bullets-panel/bullets-panel.com
 import { StorePage } from '@features/store/pages/store/store.page';
 import { BulletsService } from '@core/services/bullets.service';
 import { BLEService } from '@core/services/ble.service';
+import { StackNavigationService } from '@core/services/stack-navigation.service';
+import { TabRefreshService } from '@core/services/tab-refresh.service';
 import { Subscription } from 'rxjs';
+import { FEATURE_FLAGS } from '@core/feature-flags';
 
 @Component({
   selector: 'app-tabs',
@@ -30,13 +33,18 @@ import { Subscription } from 'rxjs';
   templateUrl: './tabs.component.html',
   styleUrls: ['./tabs.component.scss'],
 })
-export class TabsPage implements OnInit, OnDestroy {
+export class TabsPage implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild(IonTabs) tabs!: IonTabs;
+
   private modalController = inject(ModalController);
   private bulletsService = inject(BulletsService);
   private bleService = inject(BLEService);
+  private stackNav = inject(StackNavigationService);
+  private tabRefreshService = inject(TabRefreshService);
   private bulletsSubscription?: Subscription;
   private bleSubscription?: Subscription;
 
+  readonly flags = FEATURE_FLAGS;
   hasUnlimitedBullets = false;
   bulletCount = 15;
   maxBullets = 80;
@@ -52,6 +60,7 @@ export class TabsPage implements OnInit, OnDestroy {
       'bluetooth-outline': bluetoothOutline,
     });
   }
+
   ngOnInit(): void {
     this.bulletsSubscription = this.bulletsService.bulletCount$.subscribe(
       (count) => {
@@ -70,6 +79,14 @@ export class TabsPage implements OnInit, OnDestroy {
         this.isBleConnected = this.bleService.isConnected();
       }
     );
+  }
+
+  async ngAfterViewInit() {
+    // Listen for tab changes and broadcast to all components
+    this.tabs.ionTabsWillChange.subscribe((event: any) => {
+      console.log('Tab changing to:', event.tab);
+      this.tabRefreshService.notifyTabChange(event.tab);
+    });
   }
 
   ngOnDestroy(): void {

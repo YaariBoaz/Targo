@@ -29,17 +29,13 @@ export class SplashComponent implements OnInit {
       }
     }
 
-    // Show custom splash for 5 seconds
+    // Show custom splash for 2 seconds
     setTimeout(() => {
       this.checkAuthAndNavigate();
-    }, 5000);
+    }, 2000);
   }
 
   private async checkAuthAndNavigate() {
-    // Wait a bit for Firebase Auth to initialize and check for existing session
-    // The onAuthStateChanged listener in AuthService will update the current user
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     // Check if user is authenticated
     const isAuthenticated = this.authService.isAuthenticated;
 

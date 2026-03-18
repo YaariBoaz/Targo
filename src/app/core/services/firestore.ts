@@ -1,52 +1,57 @@
 import { Injectable, inject } from '@angular/core';
 import {
-  Firestore as FirebaseFirestore,
   doc,
   setDoc,
   getDoc,
   updateDoc,
   serverTimestamp,
-  DocumentReference,
-} from '@angular/fire/firestore';
-import { User as FirebaseUser } from '@angular/fire/auth';
+} from 'firebase/firestore';
+import { User as FirebaseUser } from 'firebase/auth';
 import { User, UserProfile } from '../../models/user.model';
+import { FirebaseService } from '../../shared/services/firebase.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirestoreService {
-  private firestore = inject(FirebaseFirestore);
+  private firebase = inject(FirebaseService);
 
-  /**
-   * Create or update user document in Firestore
-   * This is called after successful authentication
-   */
   async createOrUpdateUser(firebaseUser: FirebaseUser): Promise<void> {
     try {
-      const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
+      const userRef = doc(this.firebase.db, `users/${firebaseUser.uid}`);
       const userDoc = await getDoc(userRef);
 
-      const userData: Partial<User> = {
+      const userData: any = {
         uid: firebaseUser.uid,
         email: firebaseUser.email || '',
-        displayName: firebaseUser.displayName || undefined,
-        photoURL: firebaseUser.photoURL || undefined,
-        updatedAt: new Date(),
       };
 
+      if (firebaseUser.displayName) {
+        userData.displayName = firebaseUser.displayName;
+      }
+      if (firebaseUser.photoURL) {
+        userData.photoURL = firebaseUser.photoURL;
+      }
+
       if (userDoc.exists()) {
-        // Update existing user
+        const cleanedData = Object.entries(userData).reduce((acc, [key, value]) => {
+          if (value !== undefined) acc[key] = value;
+          return acc;
+        }, {} as Record<string, any>);
+
         await updateDoc(userRef, {
-          ...userData,
+          ...cleanedData,
           updatedAt: serverTimestamp(),
+          lastLogin: serverTimestamp(),
         });
         console.log('User updated in Firestore:', firebaseUser.uid);
       } else {
-        // Create new user
         await setDoc(userRef, {
           ...userData,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
+          registeredDate: serverTimestamp(),
+          lastLogin: serverTimestamp(),
         });
         console.log('New user created in Firestore:', firebaseUser.uid);
       }
@@ -56,12 +61,9 @@ export class FirestoreService {
     }
   }
 
-  /**
-   * Get user document from Firestore
-   */
   async getUser(uid: string): Promise<User | null> {
     try {
-      const userRef = doc(this.firestore, `users/${uid}`);
+      const userRef = doc(this.firebase.db, `users/${uid}`);
       const userDoc = await getDoc(userRef);
 
       if (userDoc.exists()) {
@@ -74,17 +76,17 @@ export class FirestoreService {
     }
   }
 
-  /**
-   * Update user profile information
-   */
-  async updateUserProfile(
-    uid: string,
-    profileData: Partial<UserProfile>
-  ): Promise<void> {
+  async updateUserProfile(uid: string, profileData: Partial<UserProfile>): Promise<void> {
     try {
-      const userRef = doc(this.firestore, `users/${uid}`);
+      const userRef = doc(this.firebase.db, `users/${uid}`);
+
+      const cleanedData = Object.entries(profileData).reduce((acc, [key, value]) => {
+        if (value !== undefined) acc[key] = value;
+        return acc;
+      }, {} as Record<string, any>);
+
       await updateDoc(userRef, {
-        ...profileData,
+        ...cleanedData,
         updatedAt: serverTimestamp(),
       });
       console.log('User profile updated:', uid);

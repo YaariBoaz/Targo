@@ -12,7 +12,21 @@
       "Bash(node:*)",
       "Bash(cat:*)",
       "Bash(./gradlew assembleDebug:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npx tsc:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(taskkill:*)",
+      "Bash(if exist dist rmdir /s /q dist)",
+      "Bash(if exist node_modules.cache rmdir /s /q node_modules.cache)",
+      "Read(//c/Users/User/AppData/Local/Android/Sdk/platform-tools/**)",
+      "Bash(./adb.exe install -r \"c:/ADL-NEW/Targo-2.0/targo-app/android/app/build/outputs/apk/debug/app-debug.apk\")",
+      "Bash(./adb.exe shell am start -n com.adl.targo/.MainActivity)",
+      "Bash(powershell -Command \"& { $env:Path += '';C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools''; adb devices; adb install -r ''c:\\\\ADL-NEW\\\\Targo-2.0\\\\targo-app\\\\android\\\\app\\\\build\\\\outputs\\\\apk\\\\debug\\\\app-debug.apk'' }\")",
+      "Bash(\"C:/Users/User/AppData/Local/Android/Sdk/platform-tools/adb.exe\" devices)",
+      "Bash(\"C:/Users/User/AppData/Local/Android/Sdk/platform-tools/adb.exe\" install -r \"c:/ADL-NEW/Targo-2.0/targo-app/android/app/build/outputs/apk/debug/app-debug.apk\")",
+      "Bash(npx firebase projects:list)",
+      "Bash(npm info:*)",
+      "Bash(find C:ADL-NEWTargo-2.0targo-appnode_modulescapacitor-udp-socket -name *.java)"
     ],
     "deny": [],
     "ask": []

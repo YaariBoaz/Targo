@@ -43,7 +43,7 @@ export class DrillCompletionModalComponent implements OnInit, OnDestroy {
   feedbackTitle: string = '';
   subtitle: string = '';
   nextDrillInfo: NextDrillInfo | null = null;
-  countdown: number = 15;
+  countdown: number = 30;
   progress: number = 100;
   private countdownInterval: any;
 
@@ -123,7 +123,7 @@ export class DrillCompletionModalComponent implements OnInit, OnDestroy {
   private startCountdown() {
     this.countdownInterval = setInterval(() => {
       this.countdown--;
-      this.progress = (this.countdown / 15) * 100;
+      this.progress = (this.countdown / 30) * 100;
 
       if (this.countdown <= 0) {
         clearInterval(this.countdownInterval);
@@ -140,7 +140,7 @@ export class DrillCompletionModalComponent implements OnInit, OnDestroy {
 
     // Navigate to home
     if (this.isChallenge && this.challengeId) {
-      this.router.navigate(['/challenges-drills', this.challengeId]);
+      this.router.navigate(['/challenge-drills', this.challengeId]);
     } else {
       this.router.navigate(['/tabs/home']);
     }

@@ -1,20 +1,37 @@
 import { Injectable } from '@angular/core';
-import { initializeApp } from 'firebase/app';
-import { Auth, getAuth } from 'firebase/auth';
+import { getApp, getApps, initializeApp } from 'firebase/app';
+import { Auth, getAuth, initializeAuth, indexedDBLocalPersistence } from 'firebase/auth';
 import { Firestore, getFirestore } from 'firebase/firestore';
+import { Capacitor } from '@capacitor/core';
 import { firebaseConfig } from '../../firebase-config';
+
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseService {
-  app;
   public auth: Auth;
   public db: Firestore;
 
   constructor() {
-    this.app = initializeApp(firebaseConfig);
-    console.log('FirebaseService initialized', this.app.name);
-    this.auth = getAuth(this.app);
-    this.db = getFirestore(this.app);
+    // Use the already-initialized Firebase app (from AngularFire providers),
+    // or initialize one if none exists yet. This avoids duplicate-app errors.
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
+    // On native Capacitor (Android/iOS), use indexedDB persistence so auth
+    // survives app restarts. On web, fall back to getAuth (uses localStorage).
+    if (Capacitor.isNativePlatform()) {
+      try {
+        this.auth = initializeAuth(app, {
+          persistence: indexedDBLocalPersistence,
+        });
+      } catch {
+        // initializeAuth throws if auth was already initialized — fall back to getAuth
+        this.auth = getAuth(app);
+      }
+    } else {
+      this.auth = getAuth(app);
+    }
+
+    this.db = getFirestore(app);
   }
 }

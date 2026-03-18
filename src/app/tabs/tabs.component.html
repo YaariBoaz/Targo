@@ -1,73 +1,75 @@
 <ion-tabs>
-  @if(!isBleConnected){
-  <div class="ble-status-indicator">
-    <ion-icon name="bluetooth"></ion-icon>
-    <span>Connected</span>
-  </div>
-  }
   <ion-tab-bar slot="bottom">
     <ion-tab-button tab="home">
       <ion-icon name="home-outline"></ion-icon>
       <ion-label>Home</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="training">
-      <ion-icon name="navigate-circle-outline"></ion-icon>
-      <ion-label>Training</ion-label>
-    </ion-tab-button>
+    @if (flags.tabTraining) {
+      <ion-tab-button tab="training">
+        <ion-icon name="navigate-circle-outline"></ion-icon>
+        <ion-label>Training</ion-label>
+      </ion-tab-button>
+    }
 
-    <ion-tab-button class="center-button" (click)="openSessionModal()">
-      <div class="circle-button">
-        <!-- Progress Circle (Gauge) -->
-        <svg
-          class="progress-gauge"
-          viewBox="0 0 80 80"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle
-            cx="40"
-            cy="40"
-            r="36"
-            fill="none"
-            stroke="#2a2a2a"
-            stroke-width="4"
-          />
-          <circle
-            cx="40"
-            cy="40"
-            r="36"
-            fill="none"
-            stroke="#f6ba16"
-            stroke-width="4"
-            stroke-linecap="round"
-            [attr.stroke-dasharray]="226.2"
-            [attr.stroke-dashoffset]="226.2 * (1 - bulletCount / maxBullets)"
-            transform="rotate(-90 40 40)"
-          />
-        </svg>
+    @if (flags.tabBulletCount) {
+      <ion-tab-button class="center-button" (click)="openSessionModal()">
+        <div class="circle-button">
+          <!-- Progress Circle (Gauge) -->
+          <svg
+            class="progress-gauge"
+            viewBox="0 0 80 80"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="40"
+              cy="40"
+              r="36"
+              fill="none"
+              stroke="#2a2a2a"
+              stroke-width="4"
+            />
+            <circle
+              cx="40"
+              cy="40"
+              r="36"
+              fill="none"
+              stroke="#f6ba16"
+              stroke-width="4"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="226.2"
+              [attr.stroke-dashoffset]="226.2 * (1 - bulletCount / maxBullets)"
+              transform="rotate(-90 40 40)"
+            />
+          </svg>
 
-        <!-- Bullet Icon and Counter -->
-        <div class="button-content">
-          <img
-            src="/assets/icons/bullets-counter.png"
-            alt="Bullets"
-            class="bullet-icon"
-          />
-          <div class="circle-text">
-            <span class="shots">{{ bulletCount }}</span>
+          <!-- Bullet Icon and Counter -->
+          <div class="button-content">
+            <img
+              src="/assets/icons/bullets-counter.png"
+              alt="Bullets"
+              class="bullet-icon"
+            />
+            <div class="circle-text">
+              <span class="shots">{{ bulletCount }}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </ion-tab-button>
+      </ion-tab-button>
+    }
 
-    <ion-tab-button tab="challenges">
-      <ion-icon name="trophy-outline"></ion-icon>
-      <ion-label>Challenges</ion-label>
-    </ion-tab-button>
+    @if (flags.tabChallenges) {
+      <ion-tab-button tab="challenges">
+        <ion-icon name="trophy-outline"></ion-icon>
+        <ion-label>Challenges</ion-label>
+      </ion-tab-button>
+    }
 
-    <ion-tab-button tab="statistics">
-      <ion-icon name="stats-chart-outline"></ion-icon>
-      <ion-label>Statistics</ion-label>
-    </ion-tab-button>
+    @if (flags.tabStatistics) {
+      <ion-tab-button tab="statistics">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <ion-label>History</ion-label>
+      </ion-tab-button>
+    }
   </ion-tab-bar>
 </ion-tabs>

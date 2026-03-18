@@ -10,18 +10,22 @@
   <!-- Content -->
   <div class="modal-content">
     <!-- Upgrade Banner -->
-    <div class="upgrade-banner" (click)="onUpgradeClick()">
-      <div class="best-offer-tag">Best Offer</div>
-      <div class="banner-image">
-        <img src="/assets/bg/advertisment/ad1.png" alt="Upgrade" />
+    @if (flags.settingsUpgradeBanner) {
+      <div class="upgrade-banner" (click)="onUpgradeClick()">
+        <div class="best-offer-tag">Best Offer</div>
+        <div class="banner-image">
+          <img src="/assets/bg/advertisment/ad1.png" alt="Upgrade" />
+        </div>
+        <div class="banner-overlay"></div>
+        <div class="banner-content">
+          <h2 class="banner-title">UPGRADE TO PRO</h2>
+          <p class="banner-subtitle">
+            Unlock premium features and save 5% on bullets
+          </p>
+        </div>
+        <button class="upgrade-btn">UPGRADE NOW!</button>
       </div>
-      <div class="banner-overlay"></div>
-      <div class="banner-content">
-        <h2 class="banner-title">UPGRADE TO PRO</h2>
-        <p class="banner-subtitle">Unlock premium features and save 5% on bullets</p>
-      </div>
-      <button class="upgrade-btn">UPGRADE NOW!</button>
-    </div>
+    }
 
     <!-- Menu Items -->
     <div class="menu-items">
@@ -32,6 +36,16 @@
 
       <div class="menu-item" (click)="onHelpClick()">
         <span class="menu-label">Help & Support</span>
+        <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
+      </div>
+
+      <div class="menu-item" (click)="onReplayOnboardingClick()">
+        <span class="menu-label">Replay Tutorial</span>
+        <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
+      </div>
+
+      <div class="menu-item" (click)="onLogoutClick()">
+        <span class="menu-label">Logout</span>
         <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
       </div>
     </div>
