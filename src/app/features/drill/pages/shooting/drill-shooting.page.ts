@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastController, ModalController } from '@ionic/angular/standalone';
+import { ToastController, ModalController, Platform } from '@ionic/angular/standalone';
 import { DrillService } from '@core/services/drill.service';
 import { ChallengeService } from '@core/services/challenge.service';
+import { LahavSessionService } from '@core/services/lahav-session.service';
 import { BLEConnectionState } from '@core/services/ble.service';
 import { DeviceService } from '@core/services/device.service';
 import { MultiplayerService, MultiplayerSession } from '@core/services/multiplayer.service';
@@ -30,11 +31,13 @@ import { Subscription } from 'rxjs';
 export class DrillShootingPage implements OnInit, OnDestroy {
   private drillService = inject(DrillService);
   private challengeService = inject(ChallengeService);
+  private lahavSessionService = inject(LahavSessionService);
   private deviceService = inject(DeviceService);
   private multiplayerService = inject(MultiplayerService);
   private router = inject(Router);
   private toastController = inject(ToastController);
   private modalController = inject(ModalController);
+  private platform = inject(Platform);
   private firebase = inject(FirebaseService);
 
   drillSetup: DrillSetup | null = null;
@@ -53,14 +56,26 @@ export class DrillShootingPage implements OnInit, OnDestroy {
   completionStats: any = null;
   currentDrillOrder: number | undefined;
 
+  // Lahav step modal
+  showLahavModal = signal<boolean>(false);
+  lahavModalIsLastStep = signal<boolean>(false);
+  lahavModalCurrentStep = signal<number>(1);
+  lahavModalTotalSteps = signal<number>(1);
+  lahavModalShooterName = signal<string>('');
+
   // Stop/Finish button state
   confirmingFinish: boolean = false;
   drillStopped: boolean = false;
+  drillPaused: boolean = false;
+
+  // Exit dialog (shown when back button pressed during drill)
+  showExitDialog: boolean = false;
 
   // BLE subscriptions
   private shotDataSubscription?: Subscription;
   private connectionStateSubscription?: Subscription;
   private multiplayerSubscription?: Subscription;
+  private backButtonSub?: Subscription;
 
   private timerInterval: any;
   private shootingInterval: any;
@@ -83,11 +98,33 @@ export class DrillShootingPage implements OnInit, OnDestroy {
   // PNG image dimensions (actual file is 3150x4725, but we scale it proportionally)
   private readonly PNG_ASPECT_RATIO = 2 / 3; // width / height
 
+  async ionViewWillEnter() {
+    // Ionic may restore a cached page instance instead of creating a new one.
+    // If the drill was already stopped (previous step done) and no modal is open,
+    // reinitialize for the new step.
+    if (!this.drillStopped || this.showCompletionModal || this.showLahavModal()) {
+      return;
+    }
+    const lahavSession = this.lahavSessionService.activeSession();
+    if (!lahavSession) return;
+    await this.reinitForNextLahavStep();
+  }
+
   async ngOnInit() {
     this.drillSetup = this.drillService.getCurrentDrillSetup();
 
+    // Fallback for Lahav flow: setup can be null if Ionic created a fresh page
+    // instance but the service state was somehow lost in transit.
     if (!this.drillSetup) {
-      this.router.navigate(['/tabs/training']);
+      const lahavSession = this.lahavSessionService.activeSession();
+      if (lahavSession) {
+        this.lahavSessionService.setupDrillForStep(this.lahavSessionService.currentStep());
+        this.drillSetup = this.drillService.getCurrentDrillSetup();
+      }
+    }
+
+    if (!this.drillSetup) {
+      this.router.navigate(['/lahav/sessions']);
       return;
     }
 
@@ -125,6 +162,12 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     this.totalShots = this.drillSetup.numberOfBullets;
     this.startTimer();
 
+    // Priority 100 overrides Ionic's own back-navigation handler (priority ~0-10),
+    // so pressing back won't pop to the countdown page and show GO!
+    this.backButtonSub = this.platform.backButton.subscribeWithPriority(100, () => {
+      void this.handleBackButton();
+    });
+
     // Check if we're connected to a real device or using demo mode
     this.isDemoMode = !this.deviceService.isConnected();
     this.isConnected = this.deviceService.isConnected();
@@ -156,6 +199,7 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     if (this.multiplayerSubscription) {
       this.multiplayerSubscription.unsubscribe();
     }
+    this.backButtonSub?.unsubscribe();
   }
 
   /**
@@ -210,9 +254,9 @@ export class DrillShootingPage implements OnInit, OnDestroy {
       (shotData) => {
         console.log('Received shot from BLE device:', shotData);
 
-        // Check if drill has been stopped by user
-        if (this.drillStopped) {
-          console.log('Drill stopped, ignoring shot');
+        // Check if drill has been stopped or paused
+        if (this.drillStopped || this.drillPaused) {
+          console.log('Drill stopped/paused, ignoring shot');
           return;
         }
 
@@ -233,8 +277,11 @@ export class DrillShootingPage implements OnInit, OnDestroy {
 
         // Check if this was the final shot
         if (this.shots.length >= this.totalShots) {
-          console.log('Drill complete after shot', this.shots.length);
-          this.completeDrill();
+          if (this.drillSetup?.source === 'lahav') {
+            this.stopDrill(); // Let user review hits, then press FINISH DRILL
+          } else {
+            this.completeDrill();
+          }
         }
       }
     );
@@ -295,14 +342,18 @@ export class DrillShootingPage implements OnInit, OnDestroy {
 
   private startAutoShooting() {
     const fireShot = () => {
-      // Check if drill has been stopped
-      if (this.drillStopped) {
-        console.log('Simulator stopped, no more shots');
+      // Check if drill has been stopped or paused
+      if (this.drillStopped || this.drillPaused) {
+        console.log('Simulator stopped/paused, no more shots');
         return;
       }
 
       if (this.shots.length >= this.totalShots) {
-        this.completeDrill();
+        if (this.drillSetup?.source === 'lahav') {
+          this.stopDrill();
+        } else {
+          this.completeDrill();
+        }
         return;
       }
 
@@ -430,7 +481,9 @@ export class DrillShootingPage implements OnInit, OnDestroy {
   }
 
   get stopButtonText(): string {
-    // If all bullets have been shot OR user has clicked once to confirm
+    if (this.drillSetup?.source === 'lahav') {
+      return this.drillStopped ? 'סיים שלב' : 'עצור';
+    }
     if (this.shots.length >= this.totalShots || this.confirmingFinish) {
       return 'FINISH DRILL';
     }
@@ -459,6 +512,61 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     }
   }
 
+  private handleBackButton() {
+    // Ignore if a modal is already covering the screen
+    if (this.showCompletionModal || this.showLahavModal() || this.showExitDialog) return;
+
+    // Pause everything, then show the custom in-app dialog
+    this.pauseDrill();
+    this.showExitDialog = true;
+  }
+
+  private pauseDrill() {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.shootingInterval) clearTimeout(this.shootingInterval);
+    this.drillPaused = true;
+  }
+
+  private resumeDrill() {
+    this.drillPaused = false;
+    // Resume timer from the current elapsed time
+    this.startTime = Date.now() - this.totalTime * 1000;
+    this.timerInterval = setInterval(() => {
+      this.totalTime = Math.floor((Date.now() - this.startTime) / 1000);
+    }, 1000);
+    // Resume auto-shooting simulator if in demo mode
+    if (this.isDemoMode) {
+      this.startAutoShooting();
+    }
+  }
+
+  continueAfterPause() {
+    this.showExitDialog = false;
+    if (!this.drillStopped) {
+      this.resumeDrill();
+    }
+  }
+
+  async exitAndSave() {
+    this.showExitDialog = false;
+    if (this.drillSetup?.source === 'lahav') {
+      await this.saveAndOpenLahavModal();
+    } else {
+      void this.completeDrill();
+    }
+  }
+
+  exitWithoutSaving() {
+    this.showExitDialog = false;
+    this.stopDrill();
+    if (this.drillSetup?.source === 'lahav') {
+      this.lahavSessionService.resetStep();
+      this.router.navigate(['/lahav/shooter-select']);
+    } else {
+      this.router.navigate(['/tabs/home']);
+    }
+  }
+
   async exitDrill() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
@@ -467,13 +575,8 @@ export class DrillShootingPage implements OnInit, OnDestroy {
       clearTimeout(this.shootingInterval);
     }
 
-    // Optionally save partial drill if shots were fired
-    if (this.shots.length > 0) {
-      // For now, just navigate back without saving partial
-      // TODO: Add confirmation dialog to save partial drill
-    }
-
-    this.router.navigate(['/tabs/training']);
+    this.lahavSessionService.resetStep();
+    this.router.navigate(['/lahav/shooter-select']);
   }
 
   /**
@@ -483,35 +586,121 @@ export class DrillShootingPage implements OnInit, OnDestroy {
    * If all bullets are shot: Auto-changes to "FINISH DRILL" and saves on first click
    */
   handleStopFinish() {
-    // If all bullets are shot OR user has already clicked once (confirming)
+    if (this.drillSetup?.source === 'lahav') {
+      if (!this.drillStopped) {
+        this.stopDrill(); // First press: stop the drill
+      } else {
+        void this.saveAndOpenLahavModal(); // Second press: save progress then show modal
+      }
+      return;
+    }
+
     if (this.shots.length >= this.totalShots || this.confirmingFinish) {
-      // Save the drill and show completion modal
       this.completeDrill();
     } else {
-      // First click - stop the drill and change button to "FINISH DRILL"
       this.stopDrill();
       this.confirmingFinish = true;
     }
+  }
+
+  async saveAndOpenLahavModal(): Promise<void> {
+    const shooter = this.lahavSessionService.activeShooter();
+    const session = this.lahavSessionService.activeSession();
+    const currentStep = this.lahavSessionService.currentStep();
+    const totalSteps = this.lahavSessionService.totalSteps;
+
+    if (shooter && session) {
+      await this.lahavSessionService.saveShooterProgress(session.sessionId, shooter.shooterId, currentStep);
+    }
+
+    this.lahavModalCurrentStep.set(currentStep);
+    this.lahavModalTotalSteps.set(totalSteps);
+    this.lahavModalIsLastStep.set(currentStep >= totalSteps);
+    this.lahavModalShooterName.set(shooter?.name ?? '');
+    this.showLahavModal.set(true);
+  }
+
+  async confirmLahavStep(): Promise<void> {
+    this.showLahavModal.set(false);
+    const shooter = this.lahavSessionService.activeShooter();
+    const session = this.lahavSessionService.activeSession();
+    if (!shooter || !session) return;
+
+    const currentStep = this.lahavModalCurrentStep();
+    const isLastStep = this.lahavModalIsLastStep();
+
+    if (isLastStep) {
+      await this.lahavSessionService.markShooterComplete(session.sessionId, shooter.shooterId);
+      await this.lahavSessionService.completeSessionIfDone(session);
+      this.lahavSessionService.resetStep();
+      this.router.navigate(['/lahav/shooter-select']);
+    } else {
+      const nextStep = currentStep + 1;
+      this.lahavSessionService.incrementStep();
+      this.lahavSessionService.setupDrillForStep(nextStep);
+      setTimeout(() => this.router.navigate(['/drill/countdown']), 100);
+    }
+  }
+
+  cancelLahavStep(): void {
+    this.showLahavModal.set(false);
+    this.lahavSessionService.resetStep();
+    this.router.navigate(['/lahav/shooter-select']);
   }
 
   /**
    * Stop the drill: stop timer, stop simulator, and prevent new shots from being registered
    */
   private stopDrill() {
-    // Stop the timer
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-
-    // Stop simulator mode if active
-    if (this.shootingInterval) {
-      clearTimeout(this.shootingInterval);
-    }
-
-    // Mark drill as stopped to prevent BLE shots from being registered
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.shootingInterval) clearTimeout(this.shootingInterval);
     this.drillStopped = true;
-
     console.log('Drill stopped by user');
+  }
+
+  /**
+   * Called by ionViewWillEnter when Ionic restores this cached page for a new Lahav step.
+   * Resets all drill state and restarts the session for the current step.
+   */
+  private async reinitForNextLahavStep() {
+    // Tear down previous state
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.shootingInterval) clearTimeout(this.shootingInterval);
+    this.shotDataSubscription?.unsubscribe();
+    this.connectionStateSubscription?.unsubscribe();
+
+    // Reset drill state
+    this.shots = [];
+    this.sessionStats = [];
+    this.totalTime = 0;
+    this.grouping = 0;
+    this.drillStopped = false;
+    this.confirmingFinish = false;
+
+    // Read fresh drill setup (set by setupDrillForStep before navigation)
+    this.drillSetup = this.drillService.getCurrentDrillSetup();
+    if (!this.drillSetup) {
+      this.lahavSessionService.setupDrillForStep(this.lahavSessionService.currentStep());
+      this.drillSetup = this.drillService.getCurrentDrillSetup();
+    }
+
+    if (!this.drillSetup) {
+      this.router.navigate(['/lahav/sessions']);
+      return;
+    }
+
+    this.totalShots = this.drillSetup.numberOfBullets;
+    this.isDemoMode = !this.deviceService.isConnected();
+    this.isConnected = this.deviceService.isConnected();
+
+    this.startTimer();
+
+    if (this.isDemoMode) {
+      this.startAutoShooting();
+    } else {
+      this.subscribeToShotData();
+      this.subscribeToConnectionState();
+    }
   }
 
   private async completeDrill() {
@@ -634,6 +823,7 @@ export class DrillShootingPage implements OnInit, OnDestroy {
       );
     }
   }
+
 
   private async showSuccess(message: string) {
     const toast = await this.toastController.create({

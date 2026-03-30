@@ -211,6 +211,39 @@
     </div>
   </div>
 
+  <!-- Exit / Pause Dialog (back button pressed during drill) -->
+  @if (showExitDialog) {
+  <div class="lahav-modal-backdrop">
+    <div class="lahav-modal exit-dialog">
+      <div class="exit-dialog-title">אימון מושהה</div>
+      <div class="exit-dialog-subtitle">מה תרצה לעשות?</div>
+      <button class="lahav-modal-btn primary" (click)="continueAfterPause()">המשך אימון</button>
+      <button class="lahav-modal-btn secondary" (click)="exitAndSave()">סיים ושמור</button>
+      <button class="lahav-modal-btn danger" (click)="exitWithoutSaving()">צא ללא שמירה</button>
+    </div>
+  </div>
+  }
+
+  <!-- Lahav Step Modal -->
+  @if (showLahavModal()) {
+  <div class="lahav-modal-backdrop">
+    <div class="lahav-modal">
+      @if (lahavModalIsLastStep()) {
+        <div class="lahav-modal-icon">🎯</div>
+        <h2 class="lahav-modal-title">כל הכבוד!</h2>
+        <p class="lahav-modal-subtitle">{{ lahavModalShooterName() }} סיים את כל {{ lahavModalTotalSteps() }} השלבים</p>
+        <button class="lahav-modal-btn primary" (click)="confirmLahavStep()">סיום</button>
+      } @else {
+        <div class="lahav-modal-step">שלב {{ lahavModalCurrentStep() }} / {{ lahavModalTotalSteps() }}</div>
+        <h2 class="lahav-modal-title">השלב הושלם</h2>
+        <p class="lahav-modal-subtitle">מוכן לשלב {{ lahavModalCurrentStep() + 1 }}?</p>
+        <button class="lahav-modal-btn primary" (click)="confirmLahavStep()">התחל שלב הבא</button>
+        <button class="lahav-modal-btn secondary" (click)="cancelLahavStep()">חזור לרשימה</button>
+      }
+    </div>
+  </div>
+  }
+
   <!-- Completion Modal -->
   @if (showCompletionModal && completionStats && drillSetup) {
   <app-drill-completion-modal
