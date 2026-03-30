@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>אימונים פעילים</ion-title>
+    <ion-buttons slot="start">
+      <ion-button (click)="refresh()">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (lahavService.isLoading()) {
+    <div class="center-state">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>טוען אימונים...</p>
+    </div>
+  } @else if (lahavService.sessions().length === 0) {
+    <div class="center-state">
+      <div class="empty-icon">⏳</div>
+      <p class="empty-title">אין אימונים זמינים</p>
+      <p class="empty-sub">ממתין למדריך לפתוח אימון.</p>
+    </div>
+  } @else {
+    <div class="list-header">
+      {{ lahavService.sessions().length }} אימונים ממתינים
+    </div>
+    <ion-list>
+      @for (session of lahavService.sessions(); track session.sessionId) {
+        <ion-item button (click)="selectSession(session)" detail="true">
+          <ion-label>
+            <h2>{{ session.drillType }}</h2>
+            <p>מדריך: <strong>{{ session.instructorName ?? session.instructorId }}</strong></p>
+            <p>נתיב {{ session.lane }} &bull; {{ session.totalSteps }} שלבים &bull; {{ session.shooters.length }} מתאמנים</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>

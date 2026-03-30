@@ -3,7 +3,9 @@ import { getApp, getApps, initializeApp } from 'firebase/app';
 import { Auth, getAuth, initializeAuth, indexedDBLocalPersistence } from 'firebase/auth';
 import { Firestore, getFirestore } from 'firebase/firestore';
 import { Capacitor } from '@capacitor/core';
-import { firebaseConfig } from '../../firebase-config';
+import { firebaseConfig, lahavFirebaseConfig } from '../../firebase-config';
+
+const LAHAV_APP_NAME = 'lahav-backoffice';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +13,7 @@ import { firebaseConfig } from '../../firebase-config';
 export class FirebaseService {
   public auth: Auth;
   public db: Firestore;
+  public lahavDb: Firestore;
 
   constructor() {
     // Use the already-initialized Firebase app (from AngularFire providers),
@@ -33,5 +36,10 @@ export class FirebaseService {
     }
 
     this.db = getFirestore(app);
+
+    // Secondary Firebase app for lahav-backoffice project
+    const lahavApp = getApps().find(a => a.name === LAHAV_APP_NAME)
+      ?? initializeApp(lahavFirebaseConfig, LAHAV_APP_NAME);
+    this.lahavDb = getFirestore(lahavApp);
   }
 }

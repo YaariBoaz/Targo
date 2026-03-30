@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular/standalone';
 import { DrillService } from '@core/services/drill.service';
+import { LahavSessionService } from '@core/services/lahav-session.service';
 import { DrillSetup } from '@models/drill-session.model';
 
 @Component({
@@ -14,6 +15,7 @@ import { DrillSetup } from '@models/drill-session.model';
 })
 export class DrillPreparePage implements OnInit {
   private drillService = inject(DrillService);
+  readonly lahavService = inject(LahavSessionService);
   private router = inject(Router);
   private toastController = inject(ToastController);
 
@@ -29,8 +31,7 @@ export class DrillPreparePage implements OnInit {
     this.drillSetup = this.drillService.getCurrentDrillSetup();
 
     if (!this.drillSetup) {
-      this.showError('No drill setup found. Please start from the training page.');
-      this.router.navigate(['/tabs/training']);
+      this.router.navigate(['/lahav/sessions']);
       return;
     }
 
@@ -71,12 +72,11 @@ export class DrillPreparePage implements OnInit {
    * Go back to source (training or challenges)
    */
   goBack() {
-    if (!this.drillSetup) {
-      this.router.navigate(['/tabs/training']);
+    if (!this.drillSetup || this.drillSetup.source === 'lahav') {
+      this.router.navigate(['/lahav/shooter-select']);
       return;
     }
 
-    // Navigate back based on drill source
     if (this.drillSetup.source === 'challenge') {
       this.router.navigate(['/tabs/challenges']);
     } else {

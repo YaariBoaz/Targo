@@ -41,7 +41,7 @@ export interface DrillSessionRecord {
   uid: string; // User ID
 
   // Challenge support (NEW)
-  source: 'training' | 'challenge'; // Where did this drill come from?
+  source: 'training' | 'challenge' | 'lahav'; // Where did this drill come from?
   challengeId?: string; // If from challenge
   challengeDrillId?: string; // If from challenge
   score?: number; // ADL Score (0-1000)

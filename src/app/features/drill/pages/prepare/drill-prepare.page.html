@@ -11,11 +11,15 @@
 
   <!-- Content -->
   <div class="content">
-    <h1 class="title">ARE READY FOR<br />YOUR CHALLENGE?</h1>
-    <h2 class="challenge-name">{{ challengeTitle }}</h2>
-    <p class="description">{{ challengeDescription }}</p>
+    @if (drillSetup?.source === 'lahav') {
+      <div class="step-info">
+        <span class="step-counter">שלב {{ lahavService.currentStep() }} / {{ lahavService.totalSteps }}</span>
+        <span class="step-name">{{ drillSetup?.weaponName }}</span>
+      </div>
+    }
+    <h1 class="title">?מוכן לירות</h1>
   </div>
 
   <!-- Start Button -->
-  <button class="start-btn" (click)="startShooting()">START SHOOTING</button>
+  <button class="start-btn" (click)="startShooting()">התחל לירות</button>
 </div>

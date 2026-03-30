@@ -8,6 +8,30 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'lahav',
+    children: [
+      {
+        path: 'sessions',
+        loadComponent: () =>
+          import('./features/lahav/pages/session-selector/session-selector.page').then(
+            (m) => m.SessionSelectorPage
+          ),
+      },
+      {
+        path: 'shooter-select',
+        loadComponent: () =>
+          import('./features/lahav/pages/shooter-selector/shooter-selector.page').then(
+            (m) => m.ShooterSelectorPage
+          ),
+      },
+      {
+        path: '',
+        redirectTo: 'sessions',
+        pathMatch: 'full',
+      },
+    ],
+  },
+  {
     path: 'splash',
     loadComponent: () =>
       import('./shared/components/splash/splash.component').then(
@@ -120,7 +144,6 @@ export const routes: Routes = [
   },
   {
     path: 'drill',
-    canActivate: [authGuard],
     children: [
       {
         path: 'prepare',

@@ -53,7 +53,7 @@ export class LoginPage {
   private async checkOnboardingAndRedirect() {
     const hasSeenOnboarding = await this.onboardingService.hasSeenOnboarding();
     if (hasSeenOnboarding) {
-      this.navigationService.navigateRoot('/tabs/home');
+      this.navigationService.navigateRoot('/lahav/sessions');
     } else {
       this.navigationService.navigateRoot('/onboarding');
     }

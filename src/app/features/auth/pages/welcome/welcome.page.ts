@@ -54,7 +54,7 @@ export class WelcomePage implements OnInit {
     await this.loadingController.dismiss().catch(() => {});
     const hasSeenOnboarding = await this.onboardingService.hasSeenOnboarding();
     if (hasSeenOnboarding) {
-      this.navigationService.navigateRoot('/tabs/home');
+      this.navigationService.navigateRoot('/lahav/sessions');
     } else {
       this.navigationService.navigateRoot('/onboarding');
     }

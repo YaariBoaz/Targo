@@ -10,8 +10,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "android": "ionic cap run android --external --livereload --target RFCWC1BYDHM",
-    "android:build": "ng build && npx cap sync android && npx cap run android --target RFCWC1BYDHM"
+    "android": "ionic cap run android --external --livereload",
+    "android:build": "ng build && npx cap sync android && npx cap run android"
   },
   "private": true,
   "dependencies": {

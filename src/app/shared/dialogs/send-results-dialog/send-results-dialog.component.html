@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Send Results?</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="shooter-name">{{ data.shooterName }}</div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-value">{{ data.stats.shots }}</span>
+      <span class="stat-label">Shots</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ data.stats.totalTime }}s</span>
+      <span class="stat-label">Total Time</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ data.stats.avgDistance | number:'1.1-1' }}cm</span>
+      <span class="stat-label">Avg Distance</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ data.stats.score }}</span>
+      <span class="stat-label">Score</span>
+    </div>
+  </div>
+
+  <ion-item class="email-field">
+    <ion-label position="stacked">Send to</ion-label>
+    <ion-input
+      type="email"
+      [(ngModel)]="email"
+      placeholder="shooter@example.com"
+      [disabled]="isSending"
+    ></ion-input>
+  </ion-item>
+
+  @if (errorMessage) {
+    <p class="error-message">{{ errorMessage }}</p>
+  }
+
+  <div class="actions">
+    <ion-button
+      expand="block"
+      [disabled]="isSending || !email"
+      (click)="sendEmail()"
+    >
+      @if (isSending) {
+        <ion-spinner name="crescent" slot="start"></ion-spinner>
+        Sending...
+      } @else {
+        Send Email
+      }
+    </ion-button>
+
+    <ion-button
+      expand="block"
+      fill="outline"
+      [disabled]="isSending"
+      (click)="skip()"
+    >
+      Skip
+    </ion-button>
+  </div>
+</ion-content>

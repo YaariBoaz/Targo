@@ -9,7 +9,7 @@ export interface DrillSetup {
   numberOfBullets: number;
 
   // Challenge context (optional - only for challenge drills)
-  source?: 'training' | 'challenge';
+  source?: 'training' | 'challenge' | 'lahav';
   challengeId?: string;
   challengeDrillId?: string;
   challengeTitle?: string;

@@ -112,6 +112,6 @@ export class OnboardingPage implements OnInit {
 
   private async completeOnboarding() {
     await this.onboardingService.markOnboardingComplete();
-    this.router.navigate(['/tabs/home'], { replaceUrl: true });
+    this.router.navigate(['/lahav/sessions'], { replaceUrl: true });
   }
 }

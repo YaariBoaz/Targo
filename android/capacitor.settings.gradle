@@ -41,6 +41,9 @@ project(':capgo-capacitor-wifi').projectDir = new File('../node_modules/@capgo/c
 include ':codetrix-studio-capacitor-google-auth'
 project(':codetrix-studio-capacitor-google-auth').projectDir = new File('../node_modules/@codetrix-studio/capacitor-google-auth/android')
 
+include ':frontall-capacitor-udp'
+project(':frontall-capacitor-udp').projectDir = new File('../node_modules/@frontall/capacitor-udp/android')
+
 include ':revenuecat-purchases-capacitor'
 project(':revenuecat-purchases-capacitor').projectDir = new File('../node_modules/@revenuecat/purchases-capacitor/android')
 

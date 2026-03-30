@@ -57,6 +57,30 @@
   justify-content: center;
 }
 
+.step-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  direction: rtl;
+}
+
+.step-counter {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--brand-gold);
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.step-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-white);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
 .title {
   font-size: 2rem;
   font-weight: 700;

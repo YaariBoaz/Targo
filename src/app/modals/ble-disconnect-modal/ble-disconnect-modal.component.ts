@@ -57,13 +57,13 @@ export class BleDisconnectModalComponent {
 
   async goToDashboard() {
     await this.modalController.dismiss({ action: 'dashboard' });
-    this.router.navigate(['/tabs/home']);
+    this.router.navigate(['/lahav/sessions']);
   }
 
   async goToTargetScan() {
     await this.modalController.dismiss({ action: 'scan' });
     this.router.navigate(['/ble-connection'], {
-      queryParams: { returnUrl: '/tabs/home' },
+      queryParams: { returnUrl: '/lahav/sessions' },
     });
   }
 }

@@ -143,3 +143,66 @@ ion-content {
     contain: layout style paint;
   }
 }
+
+// Lahav step alert - dark branded style
+.lahav-alert {
+  direction: rtl;
+
+  .alert-wrapper {
+    background: #141414;
+    border: 1px solid rgba(246, 186, 22, 0.2);
+    border-radius: 20px;
+    padding: 8px;
+    min-width: 320px;
+    max-width: 90vw;
+  }
+
+  .alert-head {
+    padding: 20px 20px 8px;
+  }
+
+  .alert-title {
+    font-family: 'Lexend', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ion-color-primary, #f6ba16);
+    text-align: center;
+  }
+
+  .alert-message {
+    font-family: 'Lexend', sans-serif;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    padding: 8px 20px 20px;
+  }
+
+  .alert-button-group {
+    padding: 0 12px 12px;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .alert-button {
+    font-family: 'Lexend', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 14px;
+    height: 52px;
+    margin: 0;
+
+    &.alert-button-role-confirm {
+      background: var(--ion-color-primary, #f6ba16);
+      color: #000;
+    }
+
+    &.alert-button-role-cancel {
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .alert-button-inner {
+      justify-content: center;
+    }
+  }
+}
