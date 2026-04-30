@@ -52,6 +52,11 @@ export class DeviceService {
     }
   }
 
+  /** WiFi-only: bind to a UDP port and listen for broadcast shot packets. */
+  async listenUdp(port: number): Promise<void> {
+    await this.wifiService.listen(port);
+  }
+
   async disconnect(): Promise<void> {
     await this.active.disconnect();
   }

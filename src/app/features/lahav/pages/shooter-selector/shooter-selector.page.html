@@ -38,7 +38,7 @@
     <ion-list>
       @for (shooter of shooters(); track shooter.shooterId) {
         <ion-item
-          [button]="!isCompleted(shooter.shooterId)"
+          [button]="true"
           [class.completed]="isCompleted(shooter.shooterId)"
           (click)="selectShooter(shooter)"
           detail="false"

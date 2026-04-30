@@ -87,7 +87,6 @@ export class ShooterSelectorPage implements OnDestroy {
   }
 
   selectShooter(shooter: LahavShooter): void {
-    if (this.isCompleted(shooter.shooterId)) return;
     void this.lahavService.selectShooter(shooter);
   }
 

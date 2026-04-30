@@ -58,7 +58,7 @@
       <div class="target-hitbox"></div>
       <!-- Shot markers -->
       @for (shot of shots; track shot.id) {
-      <div class="shot-marker" [style.left.px]="shot.x" [style.top.px]="shot.y">
+      <div class="shot-marker" [style.left]="(shot.x * 100) + '%'" [style.top]="(shot.y * 100) + '%'">
         {{ shot.id }}
       </div>
       }

@@ -50,7 +50,6 @@ export class LahavSessionService {
     if (!snapshot.empty) {
       this.activeDrillType.set(snapshot.docs[0].data() as LahavDrillType);
     } else {
-      console.warn('[LahavSessionService] drill_type not found for:', trainingType);
       this.activeDrillType.set(null);
     }
   }
@@ -62,15 +61,11 @@ export class LahavSessionService {
   watchSessions(): void {
     this.unsubscribeSessions?.();
     this.isLoading.set(true);
-
-    console.log('[LahavSessionService] Fetching all sessions (no filter)');
-
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    console.log('[LahavSessionService] Querying sessions between', startOfDay.toISOString(), 'and', endOfDay.toISOString());
 
     const q = query(
       collection(this.firebase.lahavDb, 'sessions'),
@@ -81,8 +76,6 @@ export class LahavSessionService {
     this.unsubscribeSessions = onSnapshot(
       q,
       (snapshot) => {
-        console.log('[LahavSessionService] Snapshot received, doc count:', snapshot.docs.length);
-        snapshot.docs.forEach(d => console.log('[LahavSessionService] Doc:', d.id, JSON.stringify(d.data())));
         const sessions = snapshot.docs.map((d) => ({
           completedTurns: [],
           ...d.data(),
@@ -92,7 +85,6 @@ export class LahavSessionService {
         this.isLoading.set(false);
       },
       (error) => {
-        console.error('[LahavSessionService] watchSessions error:', error);
         this.isLoading.set(false);
       }
     );
@@ -119,7 +111,6 @@ export class LahavSessionService {
         }
       },
       (error) => {
-        console.error('[LahavSessionService] watchActiveSession error:', error);
       }
     );
   }
@@ -130,7 +121,6 @@ export class LahavSessionService {
   }
 
   selectSession(session: LahavSession): void {
-    console.log('[LahavSessionService] selectSession:', JSON.stringify(session));
     this.activeSession.set(session);
     this.router.navigate(['/lahav/shooter-select']);
   }
@@ -161,12 +151,11 @@ export class LahavSessionService {
     try {
       await this.loadDrillType(session.drillType);
       const completedSteps = await this.loadShooterProgress(session.sessionId, shooter.shooterId);
-      const startStep = completedSteps + 1;
+      const startStep = completedSteps >= this.totalSteps ? 1 : completedSteps + 1;
       this.currentStep.set(startStep);
       this.setupDrillForStep(startStep);
       this.router.navigate(['/drill/prepare']);
     } catch (e) {
-      console.error('[LahavSessionService] selectShooter error:', e);
       this.setupDrillForStep(1);
       this.router.navigate(['/drill/prepare']);
     }
@@ -218,28 +207,22 @@ export class LahavSessionService {
   /** Save how many steps a shooter has completed in a session */
   async saveShooterProgress(sessionId: string, shooterId: string, completedSteps: number): Promise<void> {
     const path = `sessions/${sessionId}/shooterProgress/${shooterId}`;
-    console.log('[LahavSessionService] saveShooterProgress path:', path, 'completedSteps:', completedSteps);
     try {
       const ref = doc(this.firebase.lahavDb, 'sessions', sessionId, 'shooterProgress', shooterId);
       await setDoc(ref, { shooterId, completedSteps, updatedAt: serverTimestamp() }, { merge: true });
-      console.log('[LahavSessionService] saveShooterProgress SUCCESS');
     } catch (e) {
-      console.error('[LahavSessionService] saveShooterProgress ERROR:', e);
     }
   }
 
   /** Load how many steps a shooter has completed (returns 0 if none) */
   async loadShooterProgress(sessionId: string, shooterId: string): Promise<number> {
     const path = `sessions/${sessionId}/shooterProgress/${shooterId}`;
-    console.log('[LahavSessionService] loadShooterProgress path:', path);
     try {
       const ref = doc(this.firebase.lahavDb, 'sessions', sessionId, 'shooterProgress', shooterId);
       const snap = await getDoc(ref);
       const result = snap.exists() ? (snap.data()['completedSteps'] ?? 0) : 0;
-      console.log('[LahavSessionService] loadShooterProgress result:', result, 'exists:', snap.exists());
       return result;
     } catch (e) {
-      console.error('[LahavSessionService] loadShooterProgress ERROR:', e);
       return 0;
     }
   }

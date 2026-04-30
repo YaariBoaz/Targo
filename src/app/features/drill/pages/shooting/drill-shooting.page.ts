@@ -8,6 +8,8 @@ import { ChallengeService } from '@core/services/challenge.service';
 import { LahavSessionService } from '@core/services/lahav-session.service';
 import { BLEConnectionState } from '@core/services/ble.service';
 import { DeviceService } from '@core/services/device.service';
+import { FEATURE_FLAGS } from '@core/feature-flags';
+import { WIFI_CONFIG } from '@core/wifi.config';
 import { MultiplayerService, MultiplayerSession } from '@core/services/multiplayer.service';
 import { DrillSetup } from '@models/drill-session.model';
 import {
@@ -169,16 +171,32 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     });
 
     // Check if we're connected to a real device or using demo mode
-    this.isDemoMode = !this.deviceService.isConnected();
     this.isConnected = this.deviceService.isConnected();
 
-    if (this.isDemoMode) {
-      console.log('Demo mode: Starting simulator');
-      this.startAutoShooting();
-    } else {
-      console.log('Real device mode: Listening for BLE shot data');
+    if (FEATURE_FLAGS.useWifiConnection) {
+      // WiFi mode: bind UDP port and listen for broadcast packets, never use simulator
+      this.isDemoMode = false;
+      if (!this.isConnected) {
+        try {
+          await this.deviceService.listenUdp(WIFI_CONFIG.targetPort);
+          this.isConnected = true;
+          console.log('[DrillShooting] WiFi UDP listening on port', WIFI_CONFIG.targetPort);
+        } catch (err) {
+          console.error('[DrillShooting] WiFi listen failed:', err);
+        }
+      }
       this.subscribeToShotData();
       this.subscribeToConnectionState();
+    } else {
+      this.isDemoMode = !this.isConnected;
+      if (this.isDemoMode) {
+        console.log('Demo mode: Starting simulator');
+        this.startAutoShooting();
+      } else {
+        console.log('Real device mode: Listening for BLE shot data');
+        this.subscribeToShotData();
+        this.subscribeToConnectionState();
+      }
     }
   }
 
@@ -303,34 +321,8 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     bleX: number,
     bleY: number
   ): { x: number; y: number } {
-    // Get the actual display dimensions of the target
-    const displayWidth = this.targetSize;
-    const displayHeight = this.targetSize / this.PNG_ASPECT_RATIO; // Maintain aspect ratio
-
-    // OPTION 1: If BLE sends normalized coordinates (0.0 to 1.0)
-    // Origin at top-left, x increases right, y increases down
-    let x = bleX * displayWidth;
-    let y = bleY * displayHeight;
-
-    // OPTION 2: If BLE sends coordinates in cm from top-left
-    // Uncomment and adjust if needed:
-    // x = (bleX / this.PHYSICAL_TARGET_WIDTH_CM) * displayWidth;
-    // y = (bleY / this.PHYSICAL_TARGET_HEIGHT_CM) * displayHeight;
-
-    // OPTION 3: If BLE sends coordinates in cm from center
-    // Uncomment and adjust if needed:
-    // const centerX = displayWidth / 2;
-    // const centerY = displayHeight / 2;
-    // x = centerX + (bleX / (this.PHYSICAL_TARGET_WIDTH_CM / 2)) * centerX;
-    // y = centerY + (bleY / (this.PHYSICAL_TARGET_HEIGHT_CM / 2)) * centerY;
-
-    // OPTION 4: If BLE y-axis is inverted (0 at bottom instead of top)
-    // Uncomment if needed:
-    // y = displayHeight - y;
-
-    console.log(`BLE coordinates: (${bleX}, ${bleY}) -> Display: (${x}, ${y})`);
-
-    return { x, y };
+    // Coordinates are already normalized (0.0–1.0); percentage positioning handles scaling.
+    return { x: bleX, y: bleY };
   }
 
   private startTimer() {
@@ -373,15 +365,12 @@ export class DrillShootingPage implements OnInit, OnDestroy {
   }
 
   private generateRandomPosition(): { x: number; y: number } {
-    // Generate random position within a circle
-    const radius = this.targetSize / 2;
     const angle = Math.random() * 2 * Math.PI;
-    const r = Math.sqrt(Math.random()) * radius * 0.75; // 0.75 to stay well within the visible target circle
-
-    const x = radius + r * Math.cos(angle);
-    const y = radius + r * Math.sin(angle);
-
-    return { x, y };
+    const r = Math.sqrt(Math.random()) * 0.35;
+    return {
+      x: 0.5 + r * Math.cos(angle),
+      y: 0.5 + r * Math.sin(angle),
+    };
   }
 
   private recordShot(x: number, y: number) {
@@ -411,16 +400,9 @@ export class DrillShootingPage implements OnInit, OnDestroy {
   }
 
   private calculateDistanceFromCenter(x: number, y: number): number {
-    const centerX = this.targetSize / 2;
-    const centerY = this.targetSize / 2;
-    const dx = x - centerX;
-    const dy = y - centerY;
-    const distanceInPixels = Math.sqrt(dx * dx + dy * dy);
-
-    // Convert pixels to cm (simplified - assuming 1 pixel = 0.5cm for demonstration)
-    const distanceInCm = distanceInPixels * 0.5;
-
-    return Math.round(distanceInCm * 10) / 10; // Round to 1 decimal
+    const dx = (x - 0.5) * this.PHYSICAL_TARGET_WIDTH_CM;
+    const dy = (y - 0.5) * this.PHYSICAL_TARGET_HEIGHT_CM;
+    return Math.round(Math.sqrt(dx * dx + dy * dy) * 10) / 10;
   }
 
   private calculateGrouping(): number {
@@ -430,10 +412,9 @@ export class DrillShootingPage implements OnInit, OnDestroy {
 
     for (let i = 0; i < this.shots.length; i++) {
       for (let j = i + 1; j < this.shots.length; j++) {
-        const dx = this.shots[i].x - this.shots[j].x;
-        const dy = this.shots[i].y - this.shots[j].y;
-        const distance = Math.sqrt(dx * dx + dy * dy) * 0.5; // Convert to cm
-        maxDistance = Math.max(maxDistance, distance);
+        const dx = (this.shots[i].x - this.shots[j].x) * this.PHYSICAL_TARGET_WIDTH_CM;
+        const dy = (this.shots[i].y - this.shots[j].y) * this.PHYSICAL_TARGET_HEIGHT_CM;
+        maxDistance = Math.max(maxDistance, Math.sqrt(dx * dx + dy * dy));
       }
     }
 
@@ -690,16 +671,30 @@ export class DrillShootingPage implements OnInit, OnDestroy {
     }
 
     this.totalShots = this.drillSetup.numberOfBullets;
-    this.isDemoMode = !this.deviceService.isConnected();
     this.isConnected = this.deviceService.isConnected();
 
     this.startTimer();
 
-    if (this.isDemoMode) {
-      this.startAutoShooting();
-    } else {
+    if (FEATURE_FLAGS.useWifiConnection) {
+      this.isDemoMode = false;
+      if (!this.isConnected) {
+        try {
+          await this.deviceService.listenUdp(WIFI_CONFIG.targetPort);
+          this.isConnected = true;
+        } catch (err) {
+          console.error('[DrillShooting] WiFi listen failed on reinit:', err);
+        }
+      }
       this.subscribeToShotData();
       this.subscribeToConnectionState();
+    } else {
+      this.isDemoMode = !this.isConnected;
+      if (this.isDemoMode) {
+        this.startAutoShooting();
+      } else {
+        this.subscribeToShotData();
+        this.subscribeToConnectionState();
+      }
     }
   }
 
