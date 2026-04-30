@@ -3,6 +3,8 @@ package com.adl.targo.features.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adl.targo.data.firebase.AuthRepository
+import com.facebook.AccessToken
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,6 +58,28 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun handleGoogleSignInResult(account: GoogleSignInAccount?) {
+        if (account == null) {
+            _uiState.value = AuthUiState.Error("Google sign-in was cancelled")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.Loading
+            runCatching { authRepository.signInWithGoogle(account) }
+                .onSuccess { _uiState.value = AuthUiState.Success(it) }
+                .onFailure { _uiState.value = AuthUiState.Error(mapFirebaseError(it.message)) }
+        }
+    }
+
+    fun handleFacebookAccessToken(token: AccessToken) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.Loading
+            runCatching { authRepository.signInWithFacebook(token) }
+                .onSuccess { _uiState.value = AuthUiState.Success(it) }
+                .onFailure { _uiState.value = AuthUiState.Error(mapFirebaseError(it.message)) }
+        }
+    }
+
     fun resetPassword(email: String, onSent: () -> Unit, onError: (String) -> Unit) {
         if (email.isBlank()) {
             onError("Email is required")
@@ -82,6 +106,9 @@ class AuthViewModel @Inject constructor(
         "weak-password" in message -> "Password should be at least 6 characters"
         "invalid-email" in message || "INVALID_EMAIL" in message -> "Invalid email address"
         "too-many-requests" in message -> "Too many attempts. Please try again later"
+        "12501" in message -> "Google sign-in was cancelled"
+        "DEVELOPER_ERROR" in message || "10:" in message ->
+            "Google sign-in config error. Check SHA-1 fingerprint in Firebase Console."
         else -> message
     }
 }

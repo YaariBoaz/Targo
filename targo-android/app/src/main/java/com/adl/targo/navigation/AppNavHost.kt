@@ -62,10 +62,17 @@ fun AppNavHost(
             startDestination = Screen.Welcome.route,
             route = Screen.AUTH_GRAPH,
         ) {
-            composable(Screen.Welcome.route) {
+            composable(Screen.Welcome.route) { entry ->
+                val authVm = hiltViewModel<AuthViewModel>(entry)
                 WelcomeScreen(
+                    viewModel = authVm,
                     onLoginClick = { navController.navigate(Screen.Login.route) },
                     onRegisterClick = { navController.navigate(Screen.Register.route) },
+                    onAuthSuccess = {
+                        navController.navigate(Screen.MainTabs.route) {
+                            popUpTo(Screen.AUTH_GRAPH) { inclusive = true }
+                        }
+                    },
                 )
             }
 
