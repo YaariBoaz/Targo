@@ -65,6 +65,9 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.facebook.login)
 
+    // Image loading
+    implementation(libs.coil.compose)
+
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 

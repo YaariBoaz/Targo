@@ -15,10 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.adl.targo.domain.model.UserProfile
 import com.adl.targo.ui.theme.BrandDark
 import com.adl.targo.ui.theme.BrandSuccessGreen
@@ -57,25 +60,34 @@ fun HomeScreen(
                     color = TargoGold,
                     letterSpacing = 4.sp,
                 )
-                Text(
-                    text = if (isLoading) "Loading..." else "Welcome back, ${userProfile?.nickname?.ifBlank { userProfile?.displayName } ?: "Shooter"}",
-                    fontSize = 13.sp,
-                    color = Color.White.copy(alpha = 0.6f),
-                )
+                if (isLoading) {
+                    Text("Loading...", fontSize = 13.sp, color = Color.White.copy(alpha = 0.5f))
+                } else {
+                    Text(
+                        text = "Welcome back, ${userProfile?.bestName ?: "Shooter"}",
+                        fontSize = 13.sp,
+                        color = Color.White.copy(alpha = 0.6f),
+                    )
+                }
             }
 
             IconButton(onClick = { viewModel.logout(); onLogout() }) {
-                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout", tint = Color.White.copy(alpha = 0.6f))
+                Icon(
+                    Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = "Logout",
+                    tint = Color.White.copy(alpha = 0.6f),
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Stats card
-        if (userProfile != null) {
-            StatsCard(profile = userProfile!!)
-        } else if (!isLoading) {
-            StatsCard(profile = UserProfile())
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxWidth().height(120.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = TargoGold)
+            }
+        } else {
+            ProfileCard(profile = userProfile ?: UserProfile())
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -83,45 +95,52 @@ fun HomeScreen(
         // Start Drill CTA
         Button(
             onClick = onStartDrill,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp),
+            modifier = Modifier.fillMaxWidth().height(64.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = TargoGold,
-                contentColor = BrandDark,
-            ),
+            colors = ButtonDefaults.buttonColors(containerColor = TargoGold, contentColor = BrandDark),
         ) {
-            Text(
-                text = "START DRILL",
-                fontWeight = FontWeight.Black,
-                fontSize = 18.sp,
-                letterSpacing = 3.sp,
-            )
+            Text("START DRILL", fontWeight = FontWeight.Black, fontSize = 18.sp, letterSpacing = 3.sp)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Quick stats row
+        // Stats row
+        val profile = userProfile
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            StatTile(modifier = Modifier.weight(1f), label = "Drills", value = "${profile?.totalDrills ?: 0}")
+            StatTile(
+                modifier = Modifier.weight(1f),
+                label = "Hit Ratio",
+                value = "${(profile?.avgHitRatio ?: 0.0).toInt()}%",
+            )
+            StatTile(
+                modifier = Modifier.weight(1f),
+                label = "Avg Score",
+                value = "${(profile?.avgScore ?: 0.0).toInt()}",
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             StatTile(
                 modifier = Modifier.weight(1f),
-                label = "Total Drills",
-                value = "${userProfile?.totalDrills ?: 0}",
+                label = "Avg Distance",
+                value = "${String.format("%.1f", profile?.avgDistance ?: 0.0)} cm",
             )
             StatTile(
                 modifier = Modifier.weight(1f),
-                label = "Avg Hit Ratio",
-                value = "${((userProfile?.avgHitRatio ?: 0.0) * 100).toInt()}%",
+                label = "Bullets Left",
+                value = "${profile?.bullets ?: 0}",
+                valueColor = TargoGold,
             )
-            StatTile(
-                modifier = Modifier.weight(1f),
-                label = "Avg Score",
-                value = "${(userProfile?.avgScore ?: 0.0).toInt()}",
-            )
+            Spacer(modifier = Modifier.weight(1f))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -129,76 +148,92 @@ fun HomeScreen(
 }
 
 @Composable
-private fun StatsCard(profile: UserProfile) {
+private fun ProfileCard(profile: UserProfile) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BrandSurface),
     ) {
-        Column(
+        Row(
             modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column {
-                    Text(
-                        text = profile.nickname.ifBlank { profile.displayName }.ifBlank { "Shooter" },
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                    )
+            // Avatar
+            AvatarImage(
+                photoURL = profile.photoURL,
+                displayName = profile.bestName,
+                modifier = Modifier.size(60.dp),
+            )
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = profile.bestName,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                )
+                if (profile.email.isNotBlank()) {
                     Text(
                         text = profile.email,
                         fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.4f),
                     )
                 }
-
-                // Rank badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(TargoGold.copy(alpha = 0.15f))
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                ) {
-                    Text(
-                        text = profile.rank,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TargoGold,
-                    )
-                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+            // Shooter level badge
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(TargoGold.copy(alpha = 0.15f))
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
             ) {
-                ProfileStat(label = "Bullets", value = "${profile.bullets}")
+                Text(
+                    text = profile.rankLabel,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TargoGold,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ProfileStat(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TargoGold)
-        Text(text = label, fontSize = 11.sp, color = Color.White.copy(alpha = 0.4f))
+private fun AvatarImage(photoURL: String, displayName: String, modifier: Modifier = Modifier) {
+    if (photoURL.isNotBlank()) {
+        AsyncImage(
+            model = photoURL,
+            contentDescription = displayName,
+            modifier = modifier.clip(CircleShape),
+            contentScale = ContentScale.Crop,
+        )
+    } else {
+        // Fallback: initials circle
+        Box(
+            modifier = modifier
+                .clip(CircleShape)
+                .background(TargoGold.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = displayName.firstOrNull()?.uppercase() ?: "?",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = TargoGold,
+            )
+        }
     }
 }
 
 @Composable
-private fun StatTile(modifier: Modifier = Modifier, label: String, value: String) {
+private fun StatTile(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    valueColor: Color = BrandSuccessGreen,
+) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
@@ -208,13 +243,13 @@ private fun StatTile(modifier: Modifier = Modifier, label: String, value: String
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = BrandSuccessGreen)
+            Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = valueColor)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
                 fontSize = 10.sp,
                 color = Color.White.copy(alpha = 0.5f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
             )
         }
     }

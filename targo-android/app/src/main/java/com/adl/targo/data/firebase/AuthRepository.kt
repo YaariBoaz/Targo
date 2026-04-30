@@ -65,21 +65,36 @@ class AuthRepository @Inject constructor(
     }
 
     private suspend fun saveUserProfileIfNew(user: FirebaseUser, displayName: String) {
-        val doc = firestore.collection("users").document(user.uid).get().await()
+        val ref = firestore.collection("users").document(user.uid)
+        val doc = ref.get().await()
         if (!doc.exists()) {
-            val profileData = mapOf(
+            // New user — create Firestore profile matching the Ionic app's schema
+            ref.set(mapOf(
                 "uid" to user.uid,
                 "email" to (user.email ?: ""),
                 "displayName" to displayName.ifBlank { user.displayName ?: "" },
                 "photoURL" to (user.photoUrl?.toString() ?: ""),
-                "rank" to "Rookie",
-                "bullets" to 50,
-                "totalDrills" to 0,
-                "avgHitRatio" to 0.0,
-                "avgScore" to 0.0,
-                "createdAt" to System.currentTimeMillis(),
+                "shooterLevel" to "recruit",
+                "createdAt" to com.google.firebase.Timestamp.now(),
+                "updatedAt" to com.google.firebase.Timestamp.now(),
+                "registeredDate" to com.google.firebase.Timestamp.now(),
+                "lastLogin" to com.google.firebase.Timestamp.now(),
+            )).await()
+            // Create starter bullets in userBullets collection
+            firestore.collection("userBullets").document(user.uid).set(mapOf(
+                "bulletCount" to 50,
+                "userId" to user.uid,
+                "lastUpdated" to com.google.firebase.Timestamp.now(),
+            )).await()
+        } else {
+            // Existing user — update auth fields and lastLogin only
+            val updates = mutableMapOf<String, Any>(
+                "lastLogin" to com.google.firebase.Timestamp.now(),
+                "updatedAt" to com.google.firebase.Timestamp.now(),
             )
-            firestore.collection("users").document(user.uid).set(profileData).await()
+            if (!user.displayName.isNullOrBlank()) updates["displayName"] = user.displayName!!
+            if (!user.photoUrl?.toString().isNullOrBlank()) updates["photoURL"] = user.photoUrl.toString()
+            ref.update(updates).await()
         }
     }
 }
