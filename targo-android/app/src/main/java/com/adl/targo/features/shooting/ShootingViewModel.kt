@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.adl.targo.data.DrillSetupRepository
 import com.adl.targo.data.connection.ConnectionRepository
 import com.adl.targo.data.connection.TargetStatus
-import com.adl.targo.data.connection.WifiStatus
 import com.adl.targo.data.firebase.AuthRepository
 import com.adl.targo.data.firebase.DrillSessionRepository
 import com.adl.targo.data.udp.UdpShotRepository
@@ -95,7 +94,7 @@ class ShootingViewModel @Inject constructor(
 
         startTimer()
 
-        val demoMode = connectionRepository.wifiStatus.value != WifiStatus.CONNECTED_TO_TARGO
+        val demoMode = !connectionRepository.isSessionConnected
         _isDemoMode.value = demoMode
 
         if (!demoMode) {
@@ -181,7 +180,10 @@ class ShootingViewModel @Inject constructor(
         _grouping.value = calculateGrouping(updatedShots)
 
         if (updatedShots.size >= setup.numberOfBullets) {
-            completeDrill()
+            // Stop timer and flag as done — user reviews shots and taps FINISH to open popup
+            stopTimer()
+            _isDrillStopped.value = true
+            _confirmingFinish.value = true
         }
     }
 
@@ -276,9 +278,20 @@ class ShootingViewModel @Inject constructor(
         viewModelScope.launch {
             _isSaving.value = true
             try {
-                val uid = authRepository.currentUser?.uid ?: throw Exception("Not logged in")
+                val user = authRepository.currentUser ?: throw Exception("Not logged in")
+                val uid = user.uid
                 val sessionId = drillSessionRepository.saveDrillSession(uid, record)
                 Log.d(TAG, "Drill saved: $sessionId")
+
+                // Update global leaderboard
+                runCatching {
+                    drillSessionRepository.updateUserScore(
+                        uid = uid,
+                        displayName = user.displayName ?: "Shooter",
+                        photoURL = user.photoUrl?.toString() ?: "",
+                        ratingPointsToAdd = shots.size,
+                    )
+                }
 
                 if (isChallenge && setup.challengeId != null && setup.challengeDrillId != null) {
                     drillSessionRepository.updateDrillAttempt(

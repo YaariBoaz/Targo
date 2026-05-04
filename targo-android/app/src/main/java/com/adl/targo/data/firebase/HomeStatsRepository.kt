@@ -110,6 +110,35 @@ class HomeStatsRepository @Inject constructor(
             if (diffDays in 0..6) weeklyShots[diffDays] += s.shotsFired
         }
 
+        // ── Weekly streak ────────────────────────────────────────────────
+        val weekCal = Calendar.getInstance().apply { firstDayOfWeek = Calendar.MONDAY }
+        val weekSet = sessions.mapNotNull { s ->
+            s.completedAt?.toDate()?.let { date ->
+                weekCal.time = date
+                Pair(weekCal.get(Calendar.YEAR), weekCal.get(Calendar.WEEK_OF_YEAR))
+            }
+        }.toSet()
+
+        weekCal.time = java.util.Date()
+        var weeklyStreak = 0
+        while (true) {
+            val key = Pair(weekCal.get(Calendar.YEAR), weekCal.get(Calendar.WEEK_OF_YEAR))
+            if (weekSet.contains(key)) { weeklyStreak++; weekCal.add(Calendar.WEEK_OF_YEAR, -1) }
+            else break
+        }
+
+        val daysLeftInWeek = (Calendar.SUNDAY + 7 - dayOfWeek) % 7
+
+        // Save streak to user-scores so others can see it (fire & forget)
+        runCatching {
+            firestore.collection("user-scores").document(uid)
+                .set(mapOf("weeklyStreak" to weeklyStreak),
+                    com.google.firebase.firestore.SetOptions.merge())
+        }
+
+        // ── Personal best grouping ────────────────────────────────────────
+        val bestGrouping = sessions.filter { it.grouping > 0 }.minOfOrNull { it.grouping } ?: 0.0
+
         return HomeStats(
             hitRatio = hitRatio,
             avgSplitTime = avgSplitTime,
@@ -120,6 +149,9 @@ class HomeStatsRepository @Inject constructor(
             accuracyHistory = accuracyHistory,
             groupingShots = groupingShots,
             weeklyShots = weeklyShots,
+            weeklyStreak = weeklyStreak,
+            daysLeftInWeek = daysLeftInWeek,
+            bestGrouping = bestGrouping,
         )
     }
 
@@ -160,9 +192,24 @@ class HomeStatsRepository @Inject constructor(
         (started + unstarted).take(4)
     }
 
+    /** Returns the user with the highest weeklyStreak, or null if no one has streak data yet. */
+    suspend fun getTopStreakHolder(): Pair<String, Int>? {
+        val snap = runCatching {
+            firestore.collection("user-scores")
+                .orderBy("weeklyStreak", Query.Direction.DESCENDING)
+                .limit(1)
+                .get().await()
+        }.getOrNull()
+
+        val doc = snap?.documents?.firstOrNull() ?: return null
+        val streak = (doc.getLong("weeklyStreak") ?: 0L).toInt()
+        if (streak == 0) return null
+        return Pair(doc.getString("displayName") ?: "Shooter", streak)
+    }
+
     suspend fun getLeaderboard(): List<ChallengeLeaderboardEntry> {
         val snap = firestore.collection("user-scores")
-            .orderBy("score", Query.Direction.DESCENDING)
+            .orderBy("ratingPoints", Query.Direction.DESCENDING)
             .limit(10)
             .get().await()
         return snap.documents.map { doc ->
@@ -170,7 +217,7 @@ class HomeStatsRepository @Inject constructor(
                 uid = doc.id,
                 displayName = doc.getString("displayName") ?: "Shooter",
                 photoURL = doc.getString("photoURL") ?: "",
-                totalScore = (doc.getLong("score") ?: 0L).toInt(),
+                totalScore = (doc.getLong("ratingPoints") ?: 0L).toInt(),
             )
         }
     }

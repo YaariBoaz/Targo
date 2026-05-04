@@ -29,7 +29,9 @@
       "Bash(find C:ADL-NEWTargo-2.0targo-appnode_modulescapacitor-udp-socket -name *.java)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(''''project_id:'''', d[''''project_info''''][''''project_id'''']\\); print\\(''''package_names:'''', [c[''''client_info''''][''''android_client_info''''][''''package_name''''] for c in d[''''client'''']]\\)\")",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Read(//Users/boazyaari/.config/**)",
+      "Read(//Users/boazyaari/.config/firebase/**)"
     ],
     "deny": [],
     "ask": []

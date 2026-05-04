@@ -58,6 +58,26 @@ class DrillSessionRepository @Inject constructor(
         return docRef.id
     }
 
+    /** Updates the global leaderboard entry for this user (matches Ionic schema). */
+    suspend fun updateUserScore(
+        uid: String,
+        displayName: String,
+        photoURL: String,
+        ratingPointsToAdd: Int,
+    ) {
+        val ref = firestore.collection("user-scores").document(uid)
+        ref.set(
+            mapOf(
+                "displayName" to displayName,
+                "photoURL" to photoURL,
+                "ratingPoints" to FieldValue.increment(ratingPointsToAdd.toLong()),
+                "totalDrills" to FieldValue.increment(1L),
+            ),
+            com.google.firebase.firestore.SetOptions.merge()
+        ).await()
+        Log.d(TAG, "Updated user-scores for $uid +$ratingPointsToAdd ratingPoints")
+    }
+
     /** Updates challenge progress after a challenge drill completion. */
     suspend fun updateDrillAttempt(
         uid: String,

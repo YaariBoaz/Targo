@@ -14,6 +14,10 @@ data class HomeStats(
     val groupingShots: List<Double> = emptyList(),
     // Shots per day Mon–Sun of the current week
     val weeklyShots: List<Int> = List(7) { 0 },
+    // Social / competitive
+    val weeklyStreak: Int = 0,       // consecutive weeks with ≥1 drill
+    val daysLeftInWeek: Int = 0,     // days until end of Sunday
+    val bestGrouping: Double = 0.0,  // personal best grouping in cm (lower = better)
 )
 
 data class HomeChallenge(

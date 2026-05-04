@@ -14,7 +14,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,8 +40,19 @@ class HomeViewModel @Inject constructor(
     private val _leaderboard = MutableStateFlow<List<ChallengeLeaderboardEntry>>(emptyList())
     val leaderboard: StateFlow<List<ChallengeLeaderboardEntry>> = _leaderboard.asStateFlow()
 
+    private val _topStreakHolder = MutableStateFlow<Pair<String, Int>?>(null)
+    val topStreakHolder: StateFlow<Pair<String, Int>?> = _topStreakHolder.asStateFlow()
+
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    // Rotates daily — same challenge for everyone on the same calendar day
+    val dailyChallenge: StateFlow<HomeChallenge?> = _challenges
+        .map { list ->
+            if (list.isEmpty()) null
+            else list[Calendar.getInstance().get(Calendar.DAY_OF_YEAR) % list.size]
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     init {
         loadAll()
@@ -51,11 +66,13 @@ class HomeViewModel @Inject constructor(
             val statsDeferred = async { runCatching { homeStatsRepository.getHomeStats(uid) }.getOrElse { HomeStats() } }
             val challengesDeferred = async { runCatching { homeStatsRepository.getChallenges(uid) }.getOrElse { emptyList() } }
             val leaderboardDeferred = async { runCatching { homeStatsRepository.getLeaderboard() }.getOrElse { emptyList() } }
+            val topStreakDeferred = async { runCatching { homeStatsRepository.getTopStreakHolder() }.getOrNull() }
 
             _userProfile.value = profileDeferred.await()
             _homeStats.value = statsDeferred.await()
             _challenges.value = challengesDeferred.await()
             _leaderboard.value = leaderboardDeferred.await()
+            _topStreakHolder.value = topStreakDeferred.await()
             _isLoading.value = false
         }
     }
