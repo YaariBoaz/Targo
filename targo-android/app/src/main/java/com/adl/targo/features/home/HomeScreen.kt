@@ -1,43 +1,46 @@
 package com.adl.targo.features.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.adl.targo.core.FeatureFlags
 import com.adl.targo.domain.model.HomeChallenge
 import com.adl.targo.domain.model.HomeStats
 import com.adl.targo.domain.model.UserProfile
 import com.adl.targo.ui.theme.*
-import kotlin.math.min
 
 @Composable
 fun HomeScreen(
     onStartDrill: () -> Unit,
     onLogout: () -> Unit,
+    onSeeMoreStats: () -> Unit,
+    onGoToChallenges: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
@@ -48,455 +51,541 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF0D0D0D), BrandDark)))
+            .background(Color(0xFF0A0A0A))
             .verticalScroll(rememberScrollState()),
     ) {
-        // ── User Header ───────────────────────────────────────────────────
-        UserHeader(
+        // ── Header ───────────────────────────────────────────────────────────
+        HomeHeader(
             profile = userProfile,
-            homeStats = homeStats,
-            isLoading = isLoading,
-            onLogout = { viewModel.logout(); onLogout() },
+            score = homeStats?.adlScore ?: 0,
+            rank = homeStats?.globalRank ?: 0,
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(Modifier.height(8.dp))
 
-        // ── Start Drill CTA ───────────────────────────────────────────────
-        Button(
-            onClick = onStartDrill,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .padding(horizontal = 20.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = TargoGold, contentColor = BrandDark),
-        ) {
-            Text("START DRILL", fontWeight = FontWeight.Black, fontSize = 18.sp, letterSpacing = 3.sp)
+        // ── CHALLENGES section ────────────────────────────────────────────────
+        if (FeatureFlags.HOME_CHALLENGES) {
+            SectionHeader(
+                title = "CHALLENGES",
+                onSeeMore = onGoToChallenges,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(12.dp))
+            ChallengesRow(
+                challenges = challenges,
+                isLoading = isLoading,
+                onChallengeTap = onGoToChallenges,
+            )
+            Spacer(Modifier.height(20.dp))
         }
 
-        Spacer(modifier = Modifier.height(28.dp))
-
-        // ── Challenges Section ────────────────────────────────────────────
-        if (!isLoading) {
-            ChallengesSection(challenges = challenges)
-            Spacer(modifier = Modifier.height(28.dp))
+        // ── SPECIAL OFFERS section ────────────────────────────────────────────
+        if (FeatureFlags.HOME_SPECIAL_OFFERS) {
+            SectionHeader(
+                title = "SPECIAL OFFERS",
+                onSeeMore = null,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(12.dp))
+            SpecialOffersBanner(modifier = Modifier.padding(horizontal = 16.dp))
+            Spacer(Modifier.height(20.dp))
         }
 
-        // ── Statistics Section ────────────────────────────────────────────
-        StatisticsSection(stats = homeStats, isLoading = isLoading)
+        // ── STATISTICS section ────────────────────────────────────────────────
+        if (FeatureFlags.HOME_STATISTICS) {
+            SectionHeader(
+                title = "STATISTICS",
+                onSeeMore = onSeeMoreStats,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(12.dp))
+            StatisticsRow(
+                stats = homeStats,
+                isLoading = isLoading,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(32.dp))
     }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// User Header
-// ────────────────────────────────────────────────────────────────────────────
+// ── Header ────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun UserHeader(
+private fun HomeHeader(
     profile: UserProfile?,
-    homeStats: HomeStats?,
-    isLoading: Boolean,
-    onLogout: () -> Unit,
+    score: Int,
+    rank: Int,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 20.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         // Avatar
-        AvatarImage(
+        AvatarCircle(
             photoURL = profile?.photoURL ?: "",
             displayName = profile?.bestName ?: "",
-            modifier = Modifier.size(52.dp),
+            size = 56.dp,
         )
 
-        // Name + stats
-        Column(modifier = Modifier.weight(1f)) {
+        Spacer(Modifier.width(12.dp))
+
+        // Center: name + score/rank
+        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = if (isLoading) "Loading..." else (profile?.bestName ?: "Shooter"),
-                fontSize = 16.sp,
+                text = "Salute ${profile?.bestName ?: "Shooter"}.",
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
             )
-            if (!isLoading && homeStats != null) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = "Score: ${homeStats.adlScore}",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.5f),
-                    )
-                    Text(
-                        text = profile?.rankLabel ?: "Recruit",
-                        fontSize = 12.sp,
-                        color = TargoGold,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
+            Spacer(Modifier.height(2.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Score: ",
+                    fontSize = 13.sp,
+                    color = Color.White.copy(alpha = 0.6f),
+                )
+                Text(
+                    text = "$score",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.6f),
+                )
+                Text(
+                    text = "Rank: ",
+                    fontSize = 13.sp,
+                    color = Color.White.copy(alpha = 0.6f),
+                )
+                Text(
+                    text = if (rank > 0) "$rank" else "-",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.6f),
+                )
             }
         }
 
-        IconButton(onClick = onLogout) {
-            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout", tint = Color.White.copy(alpha = 0.5f))
-        }
     }
 }
 
 @Composable
-private fun AvatarImage(photoURL: String, displayName: String, modifier: Modifier = Modifier) {
-    if (photoURL.isNotBlank()) {
-        AsyncImage(
-            model = photoURL,
-            contentDescription = displayName,
-            modifier = modifier.clip(CircleShape),
-            contentScale = ContentScale.Crop,
-        )
-    } else {
-        Box(
-            modifier = modifier.clip(CircleShape).background(TargoGold.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = displayName.firstOrNull()?.uppercase() ?: "?",
-                fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TargoGold,
-            )
-        }
-    }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// Challenges Section
-// ────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun ChallengesSection(challenges: List<HomeChallenge>) {
-    Column {
-        SectionHeader(title = "CHALLENGES")
-        Spacer(modifier = Modifier.height(12.dp))
-
-        if (challenges.isEmpty()) {
-            Text(
-                text = "No challenges available",
-                color = Color.White.copy(alpha = 0.3f),
-                fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = 20.dp),
+private fun AvatarCircle(photoURL: String, displayName: String, size: Dp = 48.dp) {
+    val context = LocalContext.current
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .border(2.dp, Color.White, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (photoURL.isNotBlank()) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(photoURL)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = displayName,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
             )
         } else {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(challenges) { challenge ->
-                    ChallengeCard(challenge = challenge)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ChallengeCard(challenge: HomeChallenge) {
-    Card(
-        modifier = Modifier.width(180.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandSurface),
-    ) {
-        Column {
-            // Challenge image
             Box(
-                modifier = Modifier.fillMaxWidth().height(110.dp)
-                    .background(Color.White.copy(alpha = 0.05f)),
+                modifier = Modifier.fillMaxSize().background(TargoGold.copy(alpha = 0.25f)),
+                contentAlignment = Alignment.Center,
             ) {
-                if (challenge.imageUrl.isNotBlank()) {
-                    AsyncImage(
-                        model = challenge.imageUrl,
-                        contentDescription = challenge.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-                // Overlay gradient
-                Box(
-                    modifier = Modifier.fillMaxSize().background(
-                        Brush.verticalGradient(
-                            listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f))
-                        )
-                    )
-                )
-            }
-
-            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    text = challenge.title,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                    maxLines = 2,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // Progress bar
-                val progress = if (challenge.totalDrills > 0)
-                    challenge.completedDrills.toFloat() / challenge.totalDrills else 0f
-                Text(
-                    text = "Drills: ${challenge.completedDrills} / ${challenge.totalDrills}",
-                    fontSize = 10.sp,
-                    color = Color.White.copy(alpha = 0.5f),
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
+                    text = displayName.firstOrNull()?.uppercase() ?: "?",
+                    fontSize = (size.value * 0.35f).sp,
+                    fontWeight = FontWeight.Bold,
                     color = TargoGold,
-                    trackColor = Color.White.copy(alpha = 0.1f),
                 )
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Button(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth().height(34.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = TargoGold, contentColor = BrandDark),
-                    contentPadding = PaddingValues(0.dp),
-                ) {
-                    Text("LET'S GO", fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 1.sp)
-                }
             }
         }
     }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// Statistics Section
-// ────────────────────────────────────────────────────────────────────────────
+// ── Section header ────────────────────────────────────────────────────────────
 
 @Composable
-private fun StatisticsSection(stats: HomeStats?, isLoading: Boolean) {
-    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-        SectionHeader(title = "STATISTICS")
-        Spacer(modifier = Modifier.height(12.dp))
-
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = TargoGold)
-            }
-            return
-        }
-
-        val s = stats ?: HomeStats()
-
-        // 2×2 grid
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // Hit Ratio — arc/donut chart
-            StatCard(modifier = Modifier.weight(1f), label = "HIT RATIO") {
-                HitRatioChart(hitRatio = s.hitRatio)
-            }
-            // Avg Split Time — sparkline
-            StatCard(modifier = Modifier.weight(1f), label = "AVG SPLIT TIME",
-                value = String.format("%.2fs", s.avgSplitTime)) {
-                SparklineChart(data = s.splitTimeHistory, lineColor = BrandSuccessGreen)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // Avg Accuracy — sparkline
-            StatCard(modifier = Modifier.weight(1f), label = "AVG ACCURACY",
-                value = String.format("%.1fcm", s.avgAccuracy)) {
-                SparklineChart(data = s.accuracyHistory, lineColor = TargoGold)
-            }
-            // Avg Grouping — radial heatmap
-            StatCard(modifier = Modifier.weight(1f), label = "AVG GROUPING",
-                value = String.format("%.1fcm", s.avgGrouping)) {
-                GroupingChart(shots = s.groupingShots)
-            }
-        }
-    }
-}
-
-@Composable
-private fun StatCard(
-    modifier: Modifier = Modifier,
-    label: String,
-    value: String = "",
-    chart: @Composable BoxScope.() -> Unit,
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandSurface),
+private fun SectionHeader(title: String, onSeeMore: (() -> Unit)?, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Text(text = label, fontSize = 10.sp, color = Color.White.copy(alpha = 0.5f),
-                fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp)
-            if (value.isNotBlank()) {
-                Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
-                chart()
-            }
-        }
-    }
-}
-
-// ── Hit Ratio Arc Chart ───────────────────────────────────────────────────
-
-@Composable
-private fun HitRatioChart(hitRatio: Double) {
-    val ratio = (hitRatio / 100.0).coerceIn(0.0, 1.0).toFloat()
-    val gold = TargoGold
-    val green = BrandSuccessGreen
-    val bg = Color.White.copy(alpha = 0.08f)
-
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier.fillMaxWidth().height(70.dp).drawBehind {
-                val stroke = size.minDimension * 0.12f
-                val inset = stroke / 2f
-                val arcSize = Size(size.width - inset * 2, (size.height - inset) * 2)
-                val topLeft = Offset(inset, inset / 2)
-
-                // Background track (180° arc)
-                drawArc(bg, 180f, 180f, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
-                // Progress arc
-                drawArc(gold, 180f, 180f * ratio, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
-            },
-            contentAlignment = Alignment.BottomCenter,
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Gold vertical bar
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(18.dp)
+                    .background(TargoGold),
+            )
+            Spacer(Modifier.width(8.dp))
             Text(
-                text = "${hitRatio.toInt()}%",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Black,
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                letterSpacing = 0.5.sp,
+            )
+        }
+        if (onSeeMore != null) {
+            Text(
+                text = "SEE MORE",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
                 color = TargoGold,
+                modifier = Modifier.clickable(onClick = onSeeMore),
             )
         }
     }
 }
 
-// ── Sparkline Chart ───────────────────────────────────────────────────────
+// ── Challenges horizontal scroll ──────────────────────────────────────────────
 
 @Composable
-private fun SparklineChart(data: List<Double>, lineColor: Color) {
-    if (data.size < 2) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("—", color = Color.White.copy(alpha = 0.2f), fontSize = 20.sp)
+private fun ChallengesRow(
+    challenges: List<HomeChallenge>,
+    isLoading: Boolean,
+    onChallengeTap: () -> Unit,
+) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxWidth().height(200.dp).padding(horizontal = 16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(color = TargoGold, modifier = Modifier.size(24.dp))
         }
         return
     }
 
-    val fillColor = lineColor.copy(alpha = 0.25f)
-
-    Box(modifier = Modifier.fillMaxSize().drawBehind {
-        val pts = data.map { it.toFloat() }
-        val minV = pts.min()
-        val maxV = pts.max()
-        val range = (maxV - minV).coerceAtLeast(0.001f)
-        val w = size.width; val h = size.height
-
-        fun x(i: Int) = i.toFloat() / (pts.size - 1) * w
-        fun y(v: Float) = h - ((v - minV) / range) * h * 0.85f - h * 0.075f
-
-        // Fill path
-        val fillPath = Path().apply {
-            moveTo(x(0), h)
-            pts.forEachIndexed { i, v -> lineTo(x(i), y(v)) }
-            lineTo(x(pts.size - 1), h)
-            close()
-        }
-        drawPath(fillPath, Brush.verticalGradient(listOf(fillColor, Color.Transparent)))
-
-        // Line
-        val linePath = Path().apply {
-            moveTo(x(0), y(pts[0]))
-            pts.forEachIndexed { i, v -> if (i > 0) lineTo(x(i), y(v)) }
-        }
-        drawPath(linePath, lineColor, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-    })
-}
-
-// ── Grouping Radial Chart ─────────────────────────────────────────────────
-
-@Composable
-private fun GroupingChart(shots: List<Double>) {
-    val bands = listOf(8f, 18f, 30f, 45f, Float.MAX_VALUE)
-    val colors = listOf(
-        Color(0xFFF6BA16), Color(0xFFF59E0B),
-        Color(0xFFF97316), Color(0xFFEF4444), Color(0xFF991B1B),
-    )
-    val radiiPct = listOf(0.20f, 0.38f, 0.58f, 0.78f, 1.0f)
-
-    Box(modifier = Modifier.fillMaxSize().drawBehind {
-        val cx = size.width / 2f; val cy = size.height / 2f
-        val maxR = min(cx, cy) - 2f
-
-        val counts = IntArray(bands.size)
-        shots.forEach { d ->
-            val df = d.toFloat()
-            for (i in bands.indices) { if (df < bands[i]) { counts[i]++; break } }
-        }
-        val maxCount = counts.max().coerceAtLeast(1)
-
-        // Draw rings outer→inner
-        for (i in bands.indices.reversed()) {
-            val outerR = radiiPct[i] * maxR
-            val innerR = if (i == 0) 0f else radiiPct[i - 1] * maxR
-            val density = counts[i].toFloat() / maxCount
-            val alpha = if (shots.isEmpty()) 0.08f else 0.08f + density * 0.88f
-            val c = colors[i]
-
-            val path = Path().apply {
-                addOval(androidx.compose.ui.geometry.Rect(cx - outerR, cy - outerR, cx + outerR, cy + outerR))
-                if (innerR > 0) {
-                    addOval(androidx.compose.ui.geometry.Rect(cx - innerR, cy - innerR, cx + innerR, cy + innerR))
-                }
-            }
-            drawPath(path, color = c.copy(alpha = alpha), blendMode = BlendMode.SrcOver)
-        }
-
-        // Ring borders
-        for (i in 0 until bands.size - 1) {
-            val r = radiiPct[i] * maxR
-            drawCircle(Color.White.copy(alpha = 0.06f), radius = r, center = Offset(cx, cy), style = Stroke(0.5.dp.toPx()))
-        }
-
-        // Center crosshair
-        val ch = maxR * 0.08f
-        val crossColor = Color(0x66F6BA16)
-        val sw = 0.5.dp.toPx()
-        drawLine(crossColor, Offset(cx - ch, cy), Offset(cx + ch, cy), sw)
-        drawLine(crossColor, Offset(cx, cy - ch), Offset(cx, cy + ch), sw)
-    })
-}
-
-// ── Shared ────────────────────────────────────────────────────────────────
-
-@Composable
-private fun SectionHeader(title: String) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        challenges.forEach { challenge ->
+            ChallengeCard(challenge = challenge, onClick = onChallengeTap)
+        }
+    }
+}
+
+@Composable
+private fun ChallengeCard(challenge: HomeChallenge, onClick: () -> Unit) {
+    val context = LocalContext.current
+    val assetBitmap = remember(challenge.localAssetIndex) {
+        runCatching {
+            context.assets.open("challenges/ch${challenge.localAssetIndex}.png")
+                .use { BitmapFactory.decodeStream(it) }
+                ?.asImageBitmap()
+        }.getOrNull()
+    }
+
+    Column(
+        modifier = Modifier
+            .width(160.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+            .background(Color(0xFF1A1A1A))
+            .clickable(onClick = onClick),
+    ) {
+        // Image
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(110.dp)
+                .background(Color(0xFF2A2A2A)),
+        ) {
+            assetBitmap?.let {
+                Image(
+                    bitmap = it,
+                    contentDescription = challenge.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+            // Gradient overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f))
+                        )
+                    )
+            )
+        }
+
+        // Info
+        Column(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = challenge.title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.height(2.dp))
+            val progressLabel = if (challenge.totalDrills > 0) "Drills" else "Hits"
+            Row {
+                Text(
+                    text = "$progressLabel: ",
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.6f),
+                )
+                Text(
+                    text = "${challenge.completedDrills} / ${challenge.totalDrills}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TargoGold,
+                )
+            }
+        }
+
+        // LET'S GO button
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(TargoGold)
+                .clickable(onClick = onClick)
+                .padding(vertical = 10.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "LET'S GO",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                letterSpacing = 0.5.sp,
+            )
+        }
+    }
+}
+
+// ── Special Offers banner ─────────────────────────────────────────────────────
+
+@Composable
+private fun SpecialOffersBanner(modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .background(Color(0xFF1A1A1A), RoundedCornerShape(12.dp))
+                .border(1.dp, TargoGold.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp)),
+        ) {
+            // Dark overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color.Black.copy(alpha = 0.7f), Color.Black.copy(alpha = 0.3f))
+                        )
+                    )
+            )
+            // Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = "UNLOCK MORE!",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    color = TargoGold,
+                    letterSpacing = 0.5.sp,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Buy 100 bullets and",
+                    fontSize = 13.sp,
+                    color = Color.White,
+                )
+                Row {
+                    Text(
+                        text = "get 30 extra",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TargoGold,
+                    )
+                    Text(
+                        text = " today only!",
+                        fontSize = 13.sp,
+                        color = Color.White,
+                    )
+                }
+            }
+        }
+
+        // Pagination dots
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            repeat(3) { i ->
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 3.dp)
+                        .size(if (i == 0) 8.dp else 6.dp)
+                        .background(
+                            if (i == 0) TargoGold else Color.White.copy(alpha = 0.25f),
+                            CircleShape,
+                        ),
+                )
+            }
+        }
+    }
+}
+
+// ── Statistics 2-column row ───────────────────────────────────────────────────
+
+@Composable
+private fun StatisticsRow(
+    stats: HomeStats?,
+    isLoading: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val s = stats ?: HomeStats()
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        // Left: Targo Score card
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .background(Color(0xFF1A1A1A), RoundedCornerShape(8.dp))
+                .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(8.dp))
+                .padding(12.dp),
+        ) {
+            Text(
+                text = "Your Targo Score:",
+                fontSize = 11.sp,
+                color = Color.White.copy(alpha = 0.6f),
+            )
+            Spacer(Modifier.height(2.dp))
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = "${s.adlScore}",
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.Black,
+                    color = TargoGold,
+                    lineHeight = 44.sp,
+                )
+                Text(
+                    text = "/100",
+                    fontSize = 18.sp,
+                    color = Color.White.copy(alpha = 0.3f),
+                    modifier = Modifier.padding(bottom = 6.dp),
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                StatMetric(label = "ACCURACY", value = String.format("%.2fcm", s.avgAccuracy))
+                StatMetric(label = "SPEED", value = String.format("%.0f", s.avgSplitTime * 100))
+                StatMetric(label = "CONSISTENCY", value = String.format("%.0f", s.avgGrouping * 10))
+            }
+        }
+
+        // Right: Weekly Shots card
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .background(Color(0xFF1A1A1A), RoundedCornerShape(8.dp))
+                .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(8.dp))
+                .padding(12.dp),
+        ) {
+            Text(
+                text = "Weekly Shots:",
+                fontSize = 11.sp,
+                color = Color.White.copy(alpha = 0.6f),
+            )
+            Spacer(Modifier.height(8.dp))
+            WeeklyBarsChart(weeklyShots = s.weeklyShots)
+        }
+    }
+}
+
+@Composable
+private fun StatMetric(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = title,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Black,
-            color = Color.White,
-            letterSpacing = 2.sp,
-        )
-        Text(
-            text = "SEE MORE",
-            fontSize = 11.sp,
+            text = label,
+            fontSize = 8.sp,
+            color = Color.White.copy(alpha = 0.4f),
+            letterSpacing = 0.3.sp,
             fontWeight = FontWeight.SemiBold,
-            color = TargoGold,
-            letterSpacing = 1.sp,
         )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            text = value,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+        )
+    }
+}
+
+@Composable
+private fun WeeklyBarsChart(weeklyShots: List<Int>) {
+    val days = listOf("M", "T", "W", "T", "F", "S", "S")
+    val maxShots = weeklyShots.maxOrNull()?.coerceAtLeast(1) ?: 1
+    val todayIndex = run {
+        val dow = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK)
+        (dow - java.util.Calendar.MONDAY + 7) % 7
+    }
+
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth().height(80.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            weeklyShots.forEachIndexed { i, shots ->
+                val fraction = shots.toFloat() / maxShots
+                val barHeight = (fraction * 64).dp.coerceAtLeast(4.dp)
+                Box(
+                    modifier = Modifier
+                        .width(16.dp)
+                        .height(barHeight)
+                        .background(
+                            color = if (i == todayIndex) Color(0xFFFF9500) else Color.White.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
+                        ),
+                )
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            days.forEach { day ->
+                Text(
+                    text = day,
+                    fontSize = 9.sp,
+                    color = Color.White.copy(alpha = 0.4f),
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+        }
     }
 }

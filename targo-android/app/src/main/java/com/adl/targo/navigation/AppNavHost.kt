@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.adl.targo.data.connection.ConnectionRepository
 import com.adl.targo.data.firebase.AuthRepository
 import com.adl.targo.features.auth.AuthViewModel
 import com.adl.targo.features.auth.ForgotPasswordScreen
@@ -24,11 +25,17 @@ import com.adl.targo.features.lahav.LahavViewModel
 import com.adl.targo.features.session.SessionSelectorScreen
 import com.adl.targo.features.settings.SettingsViewModel
 import com.adl.targo.features.shooter.ShooterSelectorScreen
+import com.adl.targo.features.shooting.CountdownScreen
+import com.adl.targo.features.shooting.PrepareScreen
+import com.adl.targo.features.shooting.ShootingScreen
+import com.adl.targo.features.shooting.ShootingViewModel
+import com.adl.targo.features.wifi.WifiConnectionScreen
 import javax.inject.Inject
 
 @Composable
 fun AppNavHost(
     authRepository: AuthRepository,
+    connectionRepository: ConnectionRepository,
 ) {
     val navController = rememberNavController()
 
@@ -86,6 +93,7 @@ fun AppNavHost(
                         }
                     },
                     onForgotPassword = { navController.navigate(Screen.ForgotPassword.route) },
+                    onRegister = { navController.navigate(Screen.Register.route) },
                     viewModel = authVm,
                 )
             }
@@ -121,12 +129,61 @@ fun AppNavHost(
                     }
                 },
                 onStartDrill = {
-                    navController.navigate(Screen.DRILL_FLOW)
+                    if (connectionRepository.isSessionConnected) {
+                        navController.navigate(Screen.TRAINING_FLOW)
+                    } else {
+                        navController.navigate(Screen.WifiConnection.route)
+                    }
                 },
             )
         }
 
-        // ── Drill Flow ──────────────────────────────────────────────────────
+        // ── WiFi Connection Gate ─────────────────────────────────────────────
+        composable(Screen.WifiConnection.route) {
+            WifiConnectionScreen(
+                onBack = { navController.popBackStack() },
+                onContinue = {
+                    navController.navigate(Screen.TRAINING_FLOW) {
+                        popUpTo(Screen.WifiConnection.route) { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        // ── Training Flow (Prepare → Countdown → Shooting) ──────────────────
+        navigation(
+            startDestination = Screen.Prepare.route,
+            route = Screen.TRAINING_FLOW,
+        ) {
+            composable(Screen.Prepare.route) { entry ->
+                val parentEntry = remember(entry) { navController.getBackStackEntry(Screen.TRAINING_FLOW) }
+                val vm = hiltViewModel<ShootingViewModel>(parentEntry)
+                PrepareScreen(
+                    setup = vm.setup,
+                    onBack = { navController.popBackStack(Screen.MainTabs.route, false) },
+                    onBegin = { navController.navigate(Screen.Countdown.route) },
+                )
+            }
+            composable(Screen.Countdown.route) {
+                CountdownScreen(
+                    onReady = {
+                        navController.navigate(Screen.Shooting.route) {
+                            popUpTo(Screen.Countdown.route) { inclusive = true }
+                        }
+                    },
+                )
+            }
+            composable(Screen.Shooting.route) { entry ->
+                val parentEntry = remember(entry) { navController.getBackStackEntry(Screen.TRAINING_FLOW) }
+                val vm = hiltViewModel<ShootingViewModel>(parentEntry)
+                ShootingScreen(
+                    viewModel = vm,
+                    onFinished = { navController.popBackStack(Screen.MainTabs.route, false) },
+                )
+            }
+        }
+
+        // ── Lahav Drill Flow (legacy) ────────────────────────────────────────
         navigation(
             startDestination = Screen.SessionSelector.route,
             route = Screen.DRILL_FLOW,

@@ -12,12 +12,16 @@ data class HomeStats(
     val accuracyHistory: List<Double> = emptyList(),
     // All shot distances from center for radial grouping chart
     val groupingShots: List<Double> = emptyList(),
+    // Shots per day Mon–Sun of the current week
+    val weeklyShots: List<Int> = List(7) { 0 },
 )
 
 data class HomeChallenge(
     val id: String = "",
     val title: String = "",
     val imageUrl: String = "",
+    val localAssetIndex: Int = 1, // 1-4 → challenges/ch1.png … ch4.png
     val completedDrills: Int = 0,
     val totalDrills: Int = 0,
 )
+

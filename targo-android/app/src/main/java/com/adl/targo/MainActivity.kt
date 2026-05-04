@@ -10,7 +10,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -18,6 +17,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.adl.targo.data.connection.ConnectionRepository
 import com.adl.targo.data.firebase.AuthRepository
 import com.adl.targo.navigation.AppNavHost
 import com.adl.targo.ui.theme.TargoTheme
@@ -29,6 +29,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var authRepository: AuthRepository
+
+    @Inject
+    lateinit var connectionRepository: ConnectionRepository
 
     private var wifiLock: WifiManager.WifiLock? = null
     private var multicastLock: WifiManager.MulticastLock? = null
@@ -54,12 +57,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             TargoTheme {
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .safeDrawingPadding()
-                    ) {
-                        AppNavHost(authRepository = authRepository)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AppNavHost(
+                            authRepository = authRepository,
+                            connectionRepository = connectionRepository,
+                        )
                     }
                 }
             }

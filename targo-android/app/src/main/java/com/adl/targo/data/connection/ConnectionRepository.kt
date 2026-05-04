@@ -40,6 +40,11 @@ class ConnectionRepository @Inject constructor(
     private val _targetStatus = MutableStateFlow(TargetStatus.UNKNOWN)
     val targetStatus: StateFlow<TargetStatus> = _targetStatus.asStateFlow()
 
+    private val _currentSsid = MutableStateFlow("")
+    val currentSsid: StateFlow<String> = _currentSsid.asStateFlow()
+
+    @Volatile var isSessionConnected: Boolean = false
+
     @Volatile private var lastKeepaliveMs = 0L
     private var keepaliveJob: Job? = null
 
@@ -78,6 +83,7 @@ class ConnectionRepository @Inject constructor(
         val ssid = wifiManager.connectionInfo?.ssid?.removeSurrounding("\"") ?: ""
         Log.d(TAG, "Current WiFi SSID: $ssid")
 
+        _currentSsid.value = ssid
         _wifiStatus.value = if (ssid == settingsRepository.wifiSsid.value) WifiStatus.CONNECTED_TO_TARGO
                             else WifiStatus.WRONG_NETWORK
     }

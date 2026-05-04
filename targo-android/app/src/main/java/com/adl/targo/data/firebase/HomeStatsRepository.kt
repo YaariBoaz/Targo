@@ -2,11 +2,13 @@ package com.adl.targo.data.firebase
 
 import com.adl.targo.domain.model.HomeChallenge
 import com.adl.targo.domain.model.HomeStats
+import com.adl.targo.domain.model.ChallengeLeaderboardEntry
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
+import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,6 +35,7 @@ class HomeStatsRepository @Inject constructor(
             val grouping: Double,
             val score: Double?,
             val shots: List<Double>, // distanceFromCenter
+            val completedAt: com.google.firebase.Timestamp?,
         )
 
         val sessions = docs.mapNotNull { doc ->
@@ -51,6 +54,7 @@ class HomeStatsRepository @Inject constructor(
                 grouping = (stats["grouping"] as? Number)?.toDouble() ?: 0.0,
                 score = doc.getDouble("score"),
                 shots = distances,
+                completedAt = doc.getTimestamp("completedAt"),
             )
         }
 
@@ -87,6 +91,25 @@ class HomeStatsRepository @Inject constructor(
         // All shot distances from last 10 sessions for radial heatmap
         val groupingShots = recent.flatMap { it.shots }
 
+        // Weekly shots: Mon=0 … Sun=6 of the current week
+        val weeklyShots = MutableList(7) { 0 }
+        val cal = Calendar.getInstance()
+        // Monday of this week at midnight
+        val today = Calendar.getInstance()
+        val dayOfWeek = today.get(Calendar.DAY_OF_WEEK) // Sun=1, Mon=2 … Sat=7
+        val daysFromMonday = (dayOfWeek - Calendar.MONDAY + 7) % 7
+        val monday = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -daysFromMonday)
+            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }
+        val mondayMs = monday.timeInMillis
+        sessions.forEach { s ->
+            val ts = s.completedAt ?: return@forEach
+            val diffDays = ((ts.toDate().time - mondayMs) / 86_400_000L).toInt()
+            if (diffDays in 0..6) weeklyShots[diffDays] += s.shotsFired
+        }
+
         return HomeStats(
             hitRatio = hitRatio,
             avgSplitTime = avgSplitTime,
@@ -96,6 +119,7 @@ class HomeStatsRepository @Inject constructor(
             splitTimeHistory = splitHistory,
             accuracyHistory = accuracyHistory,
             groupingShots = groupingShots,
+            weeklyShots = weeklyShots,
         )
     }
 
@@ -117,11 +141,12 @@ class HomeStatsRepository @Inject constructor(
             doc.id to (doc.getLong("completedDrills") ?: 0L).toInt()
         }
 
-        val all = challengesDocs.map { doc ->
+        val all = challengesDocs.mapIndexed { index, doc ->
             HomeChallenge(
                 id = doc.id,
                 title = doc.getString("title") ?: "",
                 imageUrl = doc.getString("imageUrl") ?: "",
+                localAssetIndex = (index % 4) + 1,
                 completedDrills = progressMap[doc.id] ?: 0,
                 totalDrills = (doc.getLong("drillsCount") ?: 0L).toInt(),
             )
@@ -133,5 +158,20 @@ class HomeStatsRepository @Inject constructor(
         val unstarted = all.filter { !progressMap.containsKey(it.id) }.shuffled()
 
         (started + unstarted).take(4)
+    }
+
+    suspend fun getLeaderboard(): List<ChallengeLeaderboardEntry> {
+        val snap = firestore.collection("user-scores")
+            .orderBy("score", Query.Direction.DESCENDING)
+            .limit(10)
+            .get().await()
+        return snap.documents.map { doc ->
+            ChallengeLeaderboardEntry(
+                uid = doc.id,
+                displayName = doc.getString("displayName") ?: "Shooter",
+                photoURL = doc.getString("photoURL") ?: "",
+                totalScore = (doc.getLong("score") ?: 0L).toInt(),
+            )
+        }
     }
 }

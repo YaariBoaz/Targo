@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -134,13 +135,19 @@ fun WelcomeScreen(
 
             Spacer(modifier = Modifier.height(56.dp))
 
-            // Email login
-            AuthButton(
-                text = "LOGIN",
-                containerColor = TargoGold,
-                contentColor = BrandDark,
+            // Email login — dark fill with gold border + gold text
+            OutlinedButton(
                 onClick = onLoginClick,
-            )
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color(0xFF1A1A1A),
+                    contentColor = TargoGold,
+                ),
+                border = BorderStroke(1.5.dp, TargoGold),
+            ) {
+                Text("LOGIN", fontWeight = FontWeight.Bold, fontSize = 16.sp, letterSpacing = 2.sp)
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -207,7 +214,27 @@ fun WelcomeScreen(
                 CircularProgressIndicator(color = TargoGold, modifier = Modifier.size(28.dp))
             }
 
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Continue as Guest
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "CONTINUE AS GUEST",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White.copy(alpha = 0.6f),
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.clickable { /* guest mode not yet implemented */ },
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "No Data Will Be Saved!",
+                    fontSize = 11.sp,
+                    color = Color.White.copy(alpha = 0.3f),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
         }
     }
 }
